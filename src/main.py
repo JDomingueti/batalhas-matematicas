@@ -10,14 +10,13 @@ class GerenciadorTelas:
         self.largura = largura
         self.altura = altura
         self.cor = cor
-        self.volume_efeitos = 0.3
-        self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos)
+        self.volume_efeitos = 0.1
+        self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
         self.musica = pygame.mixer.Sound("../assets/musica_menu.mp3")
-        self.musica.set_volume(0.1)
+        self.musica.set_volume(0.2)
         self.rodando = True
         self.estado = 'Menu'
         self.relogio = pygame.time.Clock()
-        # self.veiculo1 = veiculos.Veiculo(50, self.altura//2, (255,0,0), self.largura, self.altura)
     
     def run(self):
         pygame.mixer.Sound.play(self.musica, -1)
@@ -45,7 +44,7 @@ class GerenciadorTelas:
                             res = self.display.mover_no_teclado(item)
                             self.interagir(res)
                 
-                self.display.update()
+                self.display.atualizar()
                 self.display.draw()
             
             # elif (self.estado == 'jogando'):
@@ -62,7 +61,7 @@ class GerenciadorTelas:
             #     self.veiculo1.processar_movimento(teclas_pressionadas)
             #     self.veiculo1.draw(self.display.display)
             #     self.veiculo1.mostrar_integridade(self.display.display, (50, 50))
-            #     self.display.update()
+            #     self.display.atualizar()
                 
             self.relogio.tick(60)
         pygame.quit()
@@ -78,7 +77,7 @@ class GerenciadorTelas:
             case 'opcoes':
                 self.display = telas.opcoes(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
             case 'voltar':
-                self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos)
+                self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
             case 'efeitos':
                 self.display.volume_efeitos(self.display.atualizar_efeitos())
                 self.volume_efeitos = self.display.atualizar_efeitos()

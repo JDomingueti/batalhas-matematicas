@@ -17,7 +17,6 @@ class tela:
         self.largura = largura
         self.altura = altura
         self.cor = cor
-        # self.tamanho = (self.largura, self.altura)
         self.display = pygame.display.set_mode((self.largura, self.altura))
         self.display.fill(cor)
         self.rodando = True
@@ -25,11 +24,10 @@ class tela:
         self.pos_botao = 0
     
     def draw(self):
-        self.display.fill(self.cor)
         for botao in self.botoes:
             botao.display_botao(self.display)
 
-    def update(self):
+    def atualizar(self):
         for pos, botao in enumerate(self.botoes):
             # 'For' utilizado para não focar dois botões (um 
             # selecionado pelo teclado e outro pelo mouse) 
@@ -47,24 +45,37 @@ class tela:
                 self.botoes[self.pos_botao].focado = False
                 self.pos_botao = (self.pos_botao - 1)
                 self.pos_botao %= len(self.botoes)
-                # for botao in self.botoes:
-                #     botao.focado = False
                 self.botoes[self.pos_botao].focado = True
+                if isinstance(self.botoes[self.pos_botao], botoes.Selecao_mapas):
+                    pos_card = self.botoes[self.pos_botao].num_card_destacado
+                    self.botoes[self.pos_botao].card_focado[pos_card] = True
             elif movimento == pygame.K_DOWN:
                 self.botoes[self.pos_botao].focado = False
                 self.pos_botao = (self.pos_botao + 1)
                 self.pos_botao %= len(self.botoes)
-                # for botao in self.botoes:
-                #     botao.focado = False
                 self.botoes[self.pos_botao].focado = True
             elif movimento == pygame.K_LEFT:
                 if isinstance(self.botoes[self.pos_botao], botoes.Controle_desl):
+                    self.botoes[self.pos_botao].focado = True
                     self.botoes[self.pos_botao].percent -= 0.1
                     res = 'musica'
+                elif isinstance(self.botoes[self.pos_botao], botoes.Selecao_mapas):
+                    pos_card = self.botoes[self.pos_botao].num_card_destacado
+                    self.botoes[self.pos_botao].num_card_destacado -= 1
+                    pos_card = 0 if (pos_card < 1) else pos_card - 1 
+                    self.botoes[self.pos_botao].card_focado = 3*[False]
+                    self.botoes[self.pos_botao].card_focado[pos_card] = True
             elif movimento == pygame.K_RIGHT:
                 if isinstance(self.botoes[self.pos_botao], botoes.Controle_desl):
+                    self.botoes[self.pos_botao].focado = True
                     self.botoes[self.pos_botao].percent += 0.1
                     res = 'musica'
+                elif isinstance(self.botoes[self.pos_botao], botoes.Selecao_mapas):
+                    pos_card = self.botoes[self.pos_botao].num_card_destacado
+                    self.botoes[self.pos_botao].num_card_destacado += 1
+                    pos_card = 2 if (pos_card > 1) else pos_card + 1
+                    self.botoes[self.pos_botao].card_focado = 3*[False]
+                    self.botoes[self.pos_botao].card_focado[pos_card] = True
             else:
                 pass
         if movimento == pygame.K_RETURN:
@@ -73,14 +84,13 @@ class tela:
 
     def volume_efeitos(self, novo_volume):
         for botao in self.botoes:
-            if isinstance(botao, botoes.Botao):
-                botao.som.set_volume(novo_volume)
+            botao.som.set_volume(novo_volume)
     
     def checar_eventos(self, evento = None):
         pass
 
 class inicio(tela):
-    def __init__(self, largura, altura, cor, efeitos):
+    def __init__(self, largura, altura, cor, efeitos, imagem):
         '''
         Parameters
         ----------
@@ -88,21 +98,25 @@ class inicio(tela):
             Valor entre 0 e 1 que representa o volume
             dos efeitos.
         '''
-        # Efeitos : volume dos efeitos
         super().__init__(largura, altura, cor)
-
         pygame.display.set_caption("Inicio")
         
         self.fonte = pygame.font.SysFont("Terminal", self.largura // 10)
         
+        caminho_imagem = "../assets/fundos/" + imagem
+        self.imagem = pygame.image.load(caminho_imagem)
+        self.imagem = pygame.transform.scale(self.imagem, (800,600))
+        self.rect = self.imagem.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
         self.nome = self.fonte.render("Batalhas Matemáticas", False, "White")
-        self.nome_rect = self.nome.get_rect(center = (self.largura//2, self.altura//5))
+        self.nome_rect = self.nome.get_rect(center = (self.largura//2, self.altura//10))
         x_botoes = self.largura//2
-        y_botoes = self.altura//5
+        y_botoes = self.altura//10
         tam_fonte = altura//10
-        self.jogar = botoes.Botao((x_botoes, 2*y_botoes), "Jogar", "Terminal", tam_fonte, "White", (120,0,0), efeitos = efeitos, focado = True)
-        self.opcoes = botoes.Botao((x_botoes, 3*y_botoes), "Opções", "Terminal", tam_fonte, "White", (120,0,0), efeitos = efeitos)
-        self.sair = botoes.Botao((x_botoes, 4*y_botoes), "Sair", "Terminal", tam_fonte, "White", (120,0,0), efeitos = efeitos)
+        self.jogar = botoes.Botao((x_botoes, 4*y_botoes), "Jogar", "Terminal", tam_fonte, "White", (255,242,0), efeitos = efeitos, focado = True)
+        self.opcoes = botoes.Botao((x_botoes, 6*y_botoes), "Opções", "Terminal", tam_fonte, "White", (255,242,0), efeitos = efeitos)
+        self.sair = botoes.Botao((x_botoes, 8*y_botoes), "Sair", "Terminal", tam_fonte, "White", (255,242,0), efeitos = efeitos)
         self.botoes = [self.jogar, self.opcoes, self.sair]
 
     def checar_eventos(self, evento = None):
@@ -126,6 +140,8 @@ class inicio(tela):
             sys.exit()
 
     def draw(self):
+        self.display.fill(self.cor)
+        self.display.blit(self.imagem, self.rect)
         super().draw()
         self.display.blit(self.nome, self.nome_rect)
 
@@ -136,15 +152,15 @@ class opcoes(tela):
         
         self.fonte = pygame.font.SysFont("Terminal", self.largura//10)
         self.nome = self.fonte.render("Opcões", False, "White")
-        self.nome_rect = self.nome.get_rect(center = (self.largura//2, self.altura//5))
+        self.nome_rect = self.nome.get_rect(center = (self.largura//2, self.altura//10))
         
         x_botoes = self.largura//2
-        y_botoes = self.altura//5
+        y_botoes = self.altura//10
         tam_fonte = altura//15
         tam_barras = (self.largura//3, 10)
-        self.voltar : botoes.Botao = botoes.Botao((x_botoes, 4 * y_botoes), "Voltar", "Terminal", tam_fonte, "White", (120,0,0), efeitos = efeitos, focado = True)
-        self.musica : botoes.Controle_desl = botoes.Controle_desl((3*self.largura//7, 2 * y_botoes), "Musica", "Terminal", tam_fonte, tam_barras, musica, (250, 250, 250))
-        self.efeitos : botoes.Controle_desl = botoes.Controle_desl((3*self.largura//7, 3 * y_botoes), "Efeitos", "Terminal", tam_fonte, tam_barras, efeitos, (250, 250, 250))
+        self.voltar : botoes.Botao = botoes.Botao((x_botoes, 9 * y_botoes), "Voltar", "Terminal", tam_fonte, "White", (255,242,0), efeitos = efeitos, focado = True)
+        self.musica : botoes.Controle_desl = botoes.Controle_desl((3*self.largura//7, 4 * y_botoes), "Musica", "Terminal", tam_fonte, tam_barras, musica, (250, 250, 250))
+        self.efeitos : botoes.Controle_desl = botoes.Controle_desl((3*self.largura//7, 6 * y_botoes), "Efeitos", "Terminal", tam_fonte, tam_barras, efeitos, (250, 250, 250))
         self.botoes = [self.voltar, self.musica, self.efeitos]
 
     def checar_eventos(self, evento = None):
@@ -166,11 +182,12 @@ class opcoes(tela):
             return("musica")
 
     def draw(self):
+        self.display.fill(self.cor)
         super().draw()
         self.display.blit(self.nome, self.nome_rect)
 
-    def update(self):
-        super().update()
+    def atualizar(self):
+        super().atualizar()
         self.volume_efeitos(self.atualizar_efeitos())
 
     def atualizar_musica(self):
@@ -186,12 +203,13 @@ class seletor_jogo(tela):
         pygame.display.set_caption("Seleção")
         self.fonte = pygame.font.SysFont("Terminal", self.largura//10)
         self.nome = self.fonte.render("Selecione o mapa", False, "White")
-        self.nome_rect = self.nome.get_rect(center = (self.largura//2, self.altura//5))
+        self.nome_rect = self.nome.get_rect(center = (self.largura//2, self.altura//10))
         x_botao = self.largura//2
-        y_botao = self.altura//5
+        y_botao = self.altura//10
         tam_fonte = self.altura//15
-        self.voltar : botoes.Botao = botoes.Botao((x_botao, 4 * y_botao), "Voltar", "Terminal", tam_fonte, "White", (120,0,0), efeitos = efeitos, focado = True)
-        self.botoes = [self.voltar]
+        self.cenarios = botoes.Selecao_mapas(largura, altura,(255,242,0),efeitos)
+        self.voltar : botoes.Botao = botoes.Botao((x_botao, 9 * y_botao), "Voltar", "Terminal", tam_fonte, "White", (255,242,0), efeitos = efeitos, focado = True)
+        self.botoes = [self.voltar, self.cenarios]
 
     def checar_eventos(self, evento = None):
         if evento == pygame.K_RETURN:
@@ -200,9 +218,20 @@ class seletor_jogo(tela):
                     return("voltar")
                 case _:
                     pass
-        if self.voltar.mouse and pygame.mouse.get_pressed()[0]:
+        if (self.voltar.mouse and pygame.mouse.get_pressed()[0]):
             return("voltar")
+        if (self.cenarios.mouse and pygame.mouse.get_pressed()[0]):
+            print("cenarios")
+        if (self.pos_botao == 0):
+            self.cenarios.card_focado = 3*[False]
+            self.cenarios.card_mouse = 3*[False]
+    
+    def atualizar(self):
+        super().atualizar()
+        self.cenarios.atualizar(self.display)
     
     def draw(self):
+        self.display.fill(self.cor)
         super().draw()
+        self.cenarios.display_botao(self.display)
         self.display.blit(self.nome, self.nome_rect)
