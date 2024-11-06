@@ -1,6 +1,6 @@
 import pygame, sys, telas
 from typing import List
-# import jogo, veiculos
+import jogo
 
 # TODO: Estilizar
 
@@ -10,33 +10,34 @@ class GerenciadorTelas:
         self.largura = largura
         self.altura = altura
         self.cor = cor
-        self.volume_efeitos = 0.1
+        self.volume_efeitos = 0
         self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
         self.musica = pygame.mixer.Sound("../assets/musica_menu.mp3")
-        self.musica.set_volume(0.2)
+        self.musica.set_volume(0)
         self.rodando = True
-        self.estado = 'Menu'
+        self.estado = 'menu'
         self.relogio = pygame.time.Clock()
     
     def run(self):
         pygame.mixer.Sound.play(self.musica, -1)
         tempo_press = pygame.time.get_ticks()
         while (self.rodando):
-            if (self.estado == 'Menu'):
-                events: List[pygame.event.Event] = pygame.event.get()
-                for event in events:
-                    res = self.display.checar_eventos()
+            if (self.estado == 'menu'):
+                eventos: List[pygame.event.Event] = pygame.event.get()
+                for evento in eventos:
+                    res = self.display.checar_eventos(evento)
                     self.interagir(res)
-                    if (event.type == pygame.QUIT):
+                    if (evento.type == pygame.QUIT):
                         pygame.quit()
                         sys.exit()
                             
                 teclas_pressionadas = pygame.key.get_pressed()
 
                 if teclas_pressionadas[pygame.K_ESCAPE]:
-                    pygame.quit()
-                    sys.exit()
-                teclado = [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_RETURN]
+                    if (pygame.time.get_ticks() - tempo_press) > 300:
+                        pygame.quit()
+                        sys.exit()
+                teclado = [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT,pygame.K_RETURN]
                 for item in teclado:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
                         if teclas_pressionadas[item]:
@@ -47,21 +48,22 @@ class GerenciadorTelas:
                 self.display.atualizar()
                 self.display.draw()
             
-            # elif (self.estado == 'jogando'):
-            #     events: List[pygame.event.Event] = pygame.event.get()
-            #     for event in events:
-            #         if (event.type == pygame.QUIT):
-            #             pygame.quit()
-            #             sys.exit()
-            #     teclas_pressionadas = pygame.key.get_pressed()
-            #     if teclas_pressionadas[pygame.K_ESCAPE]:
-            #         pygame.quit()
-            #         sys.exit()
-            #     self.display.draw()
-            #     self.veiculo1.processar_movimento(teclas_pressionadas)
-            #     self.veiculo1.draw(self.display.display)
-            #     self.veiculo1.mostrar_integridade(self.display.display, (50, 50))
-            #     self.display.atualizar()
+            elif (self.estado == 'jogando'):
+
+                eventos: List[pygame.event.Event] = pygame.event.get()
+                for evento in eventos:
+                    if (evento.type == pygame.QUIT):
+                        pygame.quit()
+                        sys.exit()
+
+                teclas_pressionadas = pygame.key.get_pressed()
+                if teclas_pressionadas[pygame.K_ESCAPE]:
+                    tempo_press = pygame.time.get_ticks()
+                    self.estado = 'menu'
+                    self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
+
+                self.display.atualizar()
+                self.display.draw()
                 
             self.relogio.tick(60)
         pygame.quit()
@@ -70,10 +72,15 @@ class GerenciadorTelas:
         match res:
             case 'selecao':
                 self.display = telas.seletor_jogo(self.largura, self.altura, self.cor, self.volume_efeitos)
-            # case 'jogar':
-            # case 'selecao':
-            #     self.display = jogo.espaco(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
-            #     self.estado = "jogando"
+            case 'oceano':
+                self.display = jogo.oceano(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
+                self.estado = "jogando"
+            case 'deserto':
+                self.display = jogo.deserto(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
+                self.estado = "jogando"
+            case 'espaco':
+                self.display = jogo.espaco(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
+                self.estado = "jogando"
             case 'opcoes':
                 self.display = telas.opcoes(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
             case 'voltar':

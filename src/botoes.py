@@ -224,24 +224,23 @@ class Selecao_mapas:
         elif (self.num_card_destacado >= 2):
             self.num_card_destacado = 2
         for num, card in enumerate(self.card_rects):
-            self.mouse = card.collidepoint(pygame.mouse.get_pos())
-            if self.mouse or self.card_focado[num]:
+            self.card_mouse[num] = card.collidepoint(pygame.mouse.get_pos())
+            if self.card_mouse[num] or self.card_focado[num]:
+                self.mouse = any(self.card_mouse)
                 if not(self.card_destacado[num]):
                     if not(self.card_focado[num]):
                         self.card_focado = 3 * [False]
-                    self.card_destacado = 3 * [False]
+                    # self.card_destacado = 3 * [False]
                     self.card_destacado[num] = True
                     self.destacado = True
                     self.num_card_destacado = num
                     pygame.mixer.Sound.play(self.som, fade_ms= 2)
-                if not self.card_focado:
-                    self.card_mouse[num] = True
                 elif not self.mouse:
                     self.focado = True
             else:
                 self.card_destacado[num] = False
                 self.card_mouse[num] = False
-        if (not any(self.card_mouse) and not any(self.card_focado)):
+        if not(any(self.card_mouse) or any(self.card_focado)):
             self.destacado = False
             self.focado = False
             self.mouse = False

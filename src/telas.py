@@ -33,6 +33,7 @@ class tela:
             # selecionado pelo teclado e outro pelo mouse) 
             if botao.mouse and not botao.focado:
                 for botao_ in self.botoes:
+                    botao_.mouse = False
                     botao_.focado = False
                 self.pos_botao = pos
             botao.atualizar(self.display)
@@ -42,6 +43,9 @@ class tela:
         res = None
         if len(self.botoes) > 0:
             if movimento == pygame.K_UP:
+                if isinstance(self.botoes[self.pos_botao], botoes.Selecao_mapas):
+                    pos_card = self.botoes[self.pos_botao].num_card_destacado
+                    self.botoes[self.pos_botao].card_focado[pos_card] = False
                 self.botoes[self.pos_botao].focado = False
                 self.pos_botao = (self.pos_botao - 1)
                 self.pos_botao %= len(self.botoes)
@@ -50,10 +54,16 @@ class tela:
                     pos_card = self.botoes[self.pos_botao].num_card_destacado
                     self.botoes[self.pos_botao].card_focado[pos_card] = True
             elif movimento == pygame.K_DOWN:
+                if isinstance(self.botoes[self.pos_botao], botoes.Selecao_mapas):
+                    pos_card = self.botoes[self.pos_botao].num_card_destacado
+                    self.botoes[self.pos_botao].card_focado[pos_card] = False
                 self.botoes[self.pos_botao].focado = False
                 self.pos_botao = (self.pos_botao + 1)
                 self.pos_botao %= len(self.botoes)
                 self.botoes[self.pos_botao].focado = True
+                if isinstance(self.botoes[self.pos_botao], botoes.Selecao_mapas):
+                    pos_card = self.botoes[self.pos_botao].num_card_destacado
+                    self.botoes[self.pos_botao].card_focado[pos_card] = True
             elif movimento == pygame.K_LEFT:
                 if isinstance(self.botoes[self.pos_botao], botoes.Controle_desl):
                     self.botoes[self.pos_botao].focado = True
@@ -216,12 +226,26 @@ class seletor_jogo(tela):
             match self.pos_botao:
                 case 0:
                     return("voltar")
+                case 1:
+                    match self.cenarios.num_card_destacado:
+                        case 0:
+                            return("oceano")
+                        case 1:
+                            return("deserto")
+                        case 2:
+                            return("espaco")
                 case _:
                     pass
         if (self.voltar.mouse and pygame.mouse.get_pressed()[0]):
             return("voltar")
         if (self.cenarios.mouse and pygame.mouse.get_pressed()[0]):
-            print("cenarios")
+            match self.cenarios.num_card_destacado:
+                case 0:
+                    return("oceano")
+                case 1:
+                    return("deserto")
+                case 2:
+                    return("espaco")
         if (self.pos_botao == 0):
             self.cenarios.card_focado = 3*[False]
             self.cenarios.card_mouse = 3*[False]
