@@ -36,7 +36,7 @@ class tela:
                     botao_.mouse = False
                     botao_.focado = False
                 self.pos_botao = pos
-            botao.atualizar(self.display)
+            botao.atualizar()
         pygame.display.flip()
 
     def mover_no_teclado(self, movimento: pygame.event.EventType):
@@ -252,7 +252,7 @@ class seletor_jogo(tela):
     
     def atualizar(self):
         super().atualizar()
-        self.cenarios.atualizar(self.display)
+        self.cenarios.atualizar()
     
     def draw(self):
         self.display.fill(self.cor)
