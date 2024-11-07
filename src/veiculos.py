@@ -2,20 +2,18 @@ import pygame
 import random
 
 class Veiculo:
-    def __init__(self, caminho_imagem, x, y, largura, altura):
+    def __init__(self, caminho_imagem, x, y, largura, altura, tamanho):
+        self.tamanho = tamanho
         self.x = x
         self.y = y
         self.integridade = 100
         self.largura = largura
         self.altura = altura
         self.imagem = None
-        tamanho = 70
-
         self.imagem = pygame.image.load(caminho_imagem)
-        self.imagem = pygame.transform.scale(self.imagem, (tamanho, tamanho))
+        self.imagem = pygame.transform.scale(self.imagem, (self.tamanho, self.tamanho))
 
     def processar_movimento(self, teclas):
-        tamanho = 70
         limite_superior = 50  # Espaço do texto
 
         # Movimentação dos Veículos 
@@ -23,26 +21,26 @@ class Veiculo:
             if teclas[pygame.K_w] and self.y > limite_superior:  # Cima
                 self.y -= 5
                 self.integridade -= 1
-            if teclas[pygame.K_s] and self.y < self.altura - tamanho:  # Baixo
+            if teclas[pygame.K_s] and self.y < self.altura - self.tamanho:  # Baixo
                 self.y += 5
                 self.integridade -= 1
             if teclas[pygame.K_a] and self.x > 0:  # Esquerda
                 self.x -= 5
                 self.integridade -= 1
-            if teclas[pygame.K_d] and self.x < self.largura - tamanho:  # Direita
+            if teclas[pygame.K_d] and self.x < self.largura - self.tamanho:  # Direita
                 self.x += 5
                 self.integridade -= 1
         else:  # Para o veículo "v2" (direita)
             if teclas[pygame.K_UP] and self.y > limite_superior:  
                 self.y -= 5
                 self.integridade -= 1
-            if teclas[pygame.K_DOWN] and self.y < self.altura - tamanho:  
+            if teclas[pygame.K_DOWN] and self.y < self.altura - self.tamanho:  
                 self.y += 5
                 self.integridade -= 1
             if teclas[pygame.K_LEFT] and self.x > 0:  
                 self.x -= 5
                 self.integridade -= 1
-            if teclas[pygame.K_RIGHT] and self.x < self.largura - tamanho:  
+            if teclas[pygame.K_RIGHT] and self.x < self.largura - self.tamanho:  
                 self.x += 5
                 self.integridade -= 1
 
@@ -55,13 +53,14 @@ class Veiculo:
         tela.blit(texto, posicao_texto)
 
 class Inimigo(pygame.sprite.Sprite):
-    def __init__(self, caminho_imagem, x, largura, altura):
-        tamanho = 70
+    def __init__(self, caminho_imagem, x, largura, altura, tamanho):
+        super().__init__() 
+        self.tamanho = tamanho
         self.image = pygame.image.load(caminho_imagem)
-        self.image = pygame.transform.scale(self.image, (tamanho, tamanho))  
-        
-        self.x = x
-        self.y = 0
+        self.image = pygame.transform.scale(self.image, (self.tamanho, self.tamanho))  
+        self.rect = self.image.get_rect()  
+        self.rect.x = x
+        self.rect.y = 0
         self.largura = largura
         self.altura = altura
         self.velocidade_vertical = 2
@@ -71,48 +70,73 @@ class Inimigo(pygame.sprite.Sprite):
         pass
 
     def draw(self, tela):
-        tela.blit(self.image, (self.x, self.y)) 
+        tela.blit(self.image, (self.rect.x, self.rect.y)) 
 
 class Inimigo1(Inimigo):
-    def __init__(self, caminho_imagem, x, largura, altura):
-       super().__init__(caminho_imagem, x, largura, altura)
-       self.y_max = random.randint(100, 300)
+    def __init__(self, caminho_imagem, x, largura, altura, tamanho):
+        super().__init__(caminho_imagem, x, largura, altura, tamanho)
+        self.y_max = random.randint(100, 300)
 
     def atualizar(self):
-        # inimigo descendo
-        if self.y < self.y_max:
-            self.y += self.velocidade_vertical
+        if self.rect.y < self.y_max:
+            self.rect.y += self.velocidade_vertical
 
 class Inimigo2(Inimigo):
-    def __init__(self, caminho_imagem, x, largura, altura):
-        super().__init__(caminho_imagem, x, largura, altura)
-        self.x = 0
-        self.y = random.randint(50, 150)
-        self.x_max = random.randint(self.x, self.largura - 70) 
-        self.y_max = random.randint(100, self.altura - 70)
+    def __init__(self, caminho_imagem, x, largura, altura, tamanho):
+        super().__init__(caminho_imagem, x, largura, altura, tamanho)
+        self.rect.y = random.randint(50, 150)
+        self.x_max = random.randint(self.rect.x, self.largura - self.tamanho) 
+        self.y_max = random.randint(100, self.altura - self.tamanho)
 
     def atualizar(self):
-        if self.x < self.x_max and self.y < self.y_max:
-            self.x += self.velocidade_horizontal  # direita
-            self.y += self.velocidade_vertical  # baixo
-
-        if self.x >= self.x_max and self.y >= self.y_max:
-            pass 
+        if self.rect.x < self.x_max and self.rect.y < self.y_max:
+            self.rect.x += self.velocidade_horizontal  # Direita
+            self.rect.y += self.velocidade_vertical  # Baixo
 
 class Inimigo3(Inimigo):
-    def __init__(self, caminho_imagem, x, largura, altura):
-        super().__init__(caminho_imagem, x, largura, altura)
-        self.y = random.randint(50, 150)  
-        self.x_max = random.randint(0, self.x - 70)  
-        self.y_max = random.randint(self.y, self.altura - 70)  
+    def __init__(self, caminho_imagem, x, largura, altura, tamanho):
+        super().__init__(caminho_imagem, x, largura, altura, tamanho)
+        self.rect.y = random.randint(50, 150)
+        self.x_max = random.randint(0, self.rect.x - self.tamanho)
+        self.y_max = random.randint(self.rect.y, self.altura - self.tamanho)
 
     def atualizar(self):
-        if self.x > self.x_max and self.y < self.y_max:
-            self.x -= self.velocidade_horizontal  # esquerda
-            self.y += self.velocidade_vertical  # baixo
+        if self.rect.x > self.x_max and self.rect.y < self.y_max:
+            self.rect.x -= self.velocidade_horizontal  # Esquerda
+            self.rect.y += self.velocidade_vertical  # Baixo
 
-        if self.x <= self.x_max and self.y >= self.y_max:
-            pass  
+class Inimigo4(Inimigo):
+    def __init__(self, caminho_imagem, x, largura, altura, tamanho):
+        super().__init__(caminho_imagem, x, largura, altura, tamanho)
+        self.velocidade_horizontal = 6
+        self.velocidade_vertical = 6
+        self.direcao_horizontal = random.choice([-1, 1])  
+        self.direcao_vertical = random.choice([-1, 1]) 
+
+    def atualizar(self):
+        # Movimento aleatório: pode ser horizontal, vertical ou diagonal
+        movimento_horizontal = random.choice([-1, 1, 0])  # -1 = esquerda, 1 = direita, 0 = sem movimento horizontal
+        movimento_vertical = random.choice([-1, 1, 0])    # -1 = cima, 1 = baixo, 0 = sem movimento vertical
+
+        # Novas posiçoes
+        nova_pos_x = self.rect.x + movimento_horizontal * self.velocidade_horizontal
+        nova_pos_y = self.rect.y + movimento_vertical * self.velocidade_vertical
+
+        # Verificando se a nova posição horizontal está dentro dos limites
+        if 0 <= nova_pos_x <= self.largura - self.tamanho:
+            self.rect.x = nova_pos_x
+
+        # Verificando se a nova posição vertical está dentro dos limites
+        if 0 <= nova_pos_y <= self.altura - self.tamanho:
+            self.rect.y = nova_pos_y
+
+        # Verifica se atingiu as bordas horizontais e inverte a direção
+        if self.rect.x <= 0 or self.rect.x >= self.largura - self.tamanho:
+            self.direcao_horizontal *= -1 
+
+        # Verifica se atingiu as bordas verticais e inverte a direção
+        if self.rect.y <= 0 or self.rect.y >= self.altura - self.tamanho:
+            self.direcao_vertical *= -1 
 
 class Gerenciador:
     def __init__(self) -> None:
@@ -121,7 +145,7 @@ class Gerenciador:
         # Dimensões
         self.largura = 800
         self.altura = 600
-        tamanho = 70
+        self.tamanho = 70
         self.tela = pygame.display.set_mode((self.largura, self.altura))
         pygame.display.set_caption("Batalhas Matemáticas")
 
@@ -131,13 +155,15 @@ class Gerenciador:
         in1_img = "batalhas-matematicas/assets/inimigos/inimigo1_deserto.png"
         in2_img = "batalhas-matematicas/assets/inimigos/inimigo2_deserto.png"
         in3_img = "batalhas-matematicas/assets/inimigos/inimigo3_deserto.png"
+        in4_img = "batalhas-matematicas/assets/inimigos/inimigo4_deserto.png"
 
         # Objetos
-        self.v1 = Veiculo(v1_img, 20, (self.altura - tamanho) // 2, self.largura, self.altura)  
-        self.v2 = Veiculo(v2_img, self.largura - 70, (self.altura - tamanho) // 2, self.largura, self.altura)
-        self.inimigo1 = Inimigo1(in1_img, self.largura // 2, self.largura, self.altura)
-        self.inimigo2 = Inimigo2(in2_img, self.largura // 2 - 100, self.largura, self.altura)
-        self.inimigo3 = Inimigo3(in3_img, self.largura // 2 + 100, self.largura, self.altura)
+        self.v1 = Veiculo(v1_img, 20, (self.altura - self.tamanho) // 2, self.largura, self.altura, self.tamanho)  
+        self.v2 = Veiculo(v2_img, self.largura - self.tamanho, (self.altura - self.tamanho) // 2, self.largura, self.altura, self.tamanho)
+        self.inimigo1 = Inimigo1(in1_img, self.largura // 2, self.largura, self.altura, self.tamanho)
+        self.inimigo2 = Inimigo2(in2_img, self.largura // 2 - 100, self.largura, self.altura, self.tamanho)
+        self.inimigo3 = Inimigo3(in3_img, self.largura // 2 + 100, self.largura, self.altura, self.tamanho)
+        self.inimigo4 = Inimigo4(in4_img, self.largura // 2, self.largura, self.altura, self.tamanho)
 
         self.clock = pygame.time.Clock()
         self.is_running = False
@@ -166,6 +192,7 @@ class Gerenciador:
         self.inimigo1.atualizar() 
         self.inimigo2.atualizar()
         self.inimigo3.atualizar()
+        self.inimigo4.atualizar()
 
         # Verifica se a integridade de algum veículo chegou a zero
         if self.v1.integridade <= 0 or self.v2.integridade <= 0:
@@ -179,6 +206,7 @@ class Gerenciador:
         self.inimigo1.draw(self.tela) 
         self.inimigo2.draw(self.tela)
         self.inimigo3.draw(self.tela)
+        self.inimigo4.draw(self.tela)
         
         # Exibe a integridade no topo
         self.v1.mostrar_integridade(self.tela, (20, 25))  # v1 no canto superior esquerdo
