@@ -82,8 +82,8 @@ class Controle_desl:
         self.barra = pygame.rect.Rect(self.x_pos + 10, self.y_pos - self.barra_altura//2, self.barra_largura, self.barra_altura)
         self.tamanho_controle = 2 * self.barra_altura
         self.percent = percent
-        inicio = self.x_pos + percent * self.barra_largura - self.barra_altura
-        self.controle = pygame.rect.Rect(inicio + 10, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
+        self.controle_x = self.barra.left + self.percent * self.barra_largura
+        self.controle = pygame.rect.Rect(self.controle_x, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
 
         self.cor = cor
         self.cor_destaque = cor_destaque
@@ -97,19 +97,19 @@ class Controle_desl:
         self.texto_rect = self.texto_render.get_rect(center = (self.x_pos - tamanho_texto - 10, self.y_pos))
         
     def display_botao(self, tela: pygame.SurfaceType):
-        if self.percent > 1:
+        if self.percent >= 1:
             self.percent = 1
-        elif self.percent < 0:
+        elif self.percent <= 0:
             self.percent = 0
         tela.blit(self.texto_render, self.texto_rect)
         pygame.draw.rect(tela, self.cor, self.barra)
         if self.destacado:
-            inicio = self.x_pos + self.percent * self.barra_largura - self.barra_altura
-            self.controle = pygame.rect.Rect(inicio + 10, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
+            self.controle_x = self.barra.left + self.percent * (self.barra_largura - self.tamanho_controle)
+            self.controle = pygame.rect.Rect(self.controle_x, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
             pygame.draw.rect(tela, self.cor_destaque, self.controle)
         else:
-            inicio = self.x_pos + self.percent * self.barra_largura - self.barra_altura
-            self.controle = pygame.rect.Rect(inicio + 10, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
+            self.controle_x = self.barra.left + self.percent * (self.barra_largura - self.tamanho_controle)
+            self.controle = pygame.rect.Rect(self.controle_x, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
             pygame.draw.rect(tela, self.cor, self.controle)
 
     def atualizar(self, tela: pygame.SurfaceType):
@@ -119,17 +119,18 @@ class Controle_desl:
                 self.mouse = True
             if any(pygame.mouse.get_pressed()):
                 novo_x = pygame.mouse.get_pos()[0] - self.tamanho_controle//2
-                if novo_x <= self.barra.left - self.tamanho_controle//2:
-                    novo_x = self.barra.left - self.tamanho_controle//2
-                elif novo_x >= self.barra.right - self.tamanho_controle//2:
-                    novo_x = self.barra.right - self.tamanho_controle//2
-                self.controle = pygame.rect.Rect(novo_x, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
+                if novo_x <= self.barra.left:
+                    novo_x = self.barra.left
+                elif novo_x >= self.barra.right - self.tamanho_controle:
+                    novo_x = self.barra.right - self.tamanho_controle
+                self.percent = (novo_x - self.barra.left) / (self.barra_largura - self.tamanho_controle)
+                self.display_botao(tela)
         else:
             self.destacado = False
             self.mouse = False
 
     def ler_posicao(self):
-        pos_inicio = self.barra.left 
-        pos_controle = self.controle.centerx
-        posicao = (pos_controle - pos_inicio) / self.barra.width
+        pos_inicio = self.barra.left
+        pos_controle = self.controle.left
+        posicao = (pos_controle - pos_inicio) / (self.barra_largura - self.tamanho_controle) 
         return posicao
