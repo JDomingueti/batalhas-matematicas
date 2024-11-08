@@ -108,19 +108,26 @@ class Inimigo3(Inimigo):
 class Inimigo4(Inimigo):
     def __init__(self, caminho_imagem, x, largura, altura, tamanho):
         super().__init__(caminho_imagem, x, largura, altura, tamanho)
-        self.velocidade_horizontal = 6
-        self.velocidade_vertical = 6
+        self.velocidade_horizontal = 4
+        self.velocidade_vertical = 3
         self.direcao_horizontal = random.choice([-1, 1])  
         self.direcao_vertical = random.choice([-1, 1]) 
-
+        self.momento = pygame.time.get_ticks()  # Guarda o momento em que a direção foi escolhida
+        self.tempo_troca_direcao = random.randint(1000, 3000)
+        
     def atualizar(self):
-        # Movimento aleatório: pode ser horizontal, vertical ou diagonal
-        movimento_horizontal = random.choice([-1, 1, 0])  # -1 = esquerda, 1 = direita, 0 = sem movimento horizontal
-        movimento_vertical = random.choice([-1, 1, 0])    # -1 = cima, 1 = baixo, 0 = sem movimento vertical
+        # Verifica se o tempo de troca de direção passou
+        if pygame.time.get_ticks() - self.momento > self.tempo_troca_direcao:
+            self.momento = pygame.time.get_ticks() 
+            self.tempo_troca_direcao = random.randint(1000, 3000) 
 
-        # Novas posiçoes
-        nova_pos_x = self.rect.x + movimento_horizontal * self.velocidade_horizontal
-        nova_pos_y = self.rect.y + movimento_vertical * self.velocidade_vertical
+            # Escolhe uma nova direção aleatória
+            self.direcao_horizontal = random.choice([-1, 1])  # -1 = esquerda, 1 = direita
+            self.direcao_vertical = random.choice([-1, 1])    # -1 = cima, 1 = baixo
+
+        # Novas posições
+        nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
+        nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
 
         # Verificando se a nova posição horizontal está dentro dos limites
         if 0 <= nova_pos_x <= self.largura - self.tamanho:
