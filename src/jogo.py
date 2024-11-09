@@ -1,4 +1,5 @@
-import pygame, random
+import pygame, random, eventos
+from typing import List
 
 class jogo:
     def __init__(self, largura, altura, cor, musica):
@@ -12,14 +13,35 @@ class jogo:
         self.display.fill(self.cor)
         self.volume_musica = musica
         self.relogio = pygame.time.Clock()
+        self.eventos : List[eventos.tubarao]= []
         self.frame_atual = 0
+        self.b = 0
 
     def atualizar(self):
+        self.checar_eventos(None)
+        if len(self.eventos) > 0:
+            for evento in self.eventos:
+                evento.aviso_direcao()
+                evento.atualizar()
+                if evento.matar():
+                    self.eventos.remove(evento)
+
         pygame.display.flip()
         self.frame_atual += 1
-
     def checar_eventos(self, evento):
-        pass
+        if len(self.eventos) == 0:
+            # self.eventos.append(eventos.tubarao(self.display))
+            # self.eventos.append(eventos.caranguejo(self.display))
+            # self.eventos.append(eventos.bando_aguas_vivas(self.display))
+            # self.eventos.append(eventos.bola_de_feno(self.display))
+            # self.eventos.append(eventos.minhocosul(self.display))
+            # self.eventos.append(eventos.nuvem_gafanhotos(self.display))
+            # self.eventos.append(eventos.invasores_do_espaco(self.display))
+            # self.eventos.append(eventos.cometa(self.display))
+            pass
+        # else:
+        #     print(self.eventos)
+
 
     def criar_obstaculos(self, vida, cor = (0, 0, 0), nome = None, alcance = 0):
         for num_linha, linha in enumerate(self.mapa):
@@ -38,6 +60,9 @@ class jogo:
     def draw(self):
         self.display.blit(self.fundo, (0, 0))
         self.obstaculos.draw(self.display)
+        if len(self.eventos) > 0:
+            for evento in self.eventos:
+                evento.desenhar()
     
     def gerar_eventos(self):
         pass
