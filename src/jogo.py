@@ -1,9 +1,11 @@
 import pygame, random, eventos
 from typing import List
+from abc import ABC, abstractmethod
 
-class jogo:
+class jogo(ABC):
+    @abstractmethod
     def __init__(self, largura, altura, cor, musica):
-        pygame.init()
+        super().__init__()
         self.largura = largura
         self.altura = altura
         self.cor = cor
@@ -15,33 +17,38 @@ class jogo:
         self.relogio = pygame.time.Clock()
         self.eventos : List[eventos.tubarao]= []
         self.frame_atual = 0
-        self.b = 0
 
     def atualizar(self):
         self.checar_eventos(None)
+        self.gerar_eventos()
         if len(self.eventos) > 0:
             for evento in self.eventos:
                 evento.aviso_direcao()
                 evento.atualizar()
                 if evento.matar():
                     self.eventos.remove(evento)
-
+        self.checar_colisoes()
         pygame.display.flip()
         self.frame_atual += 1
+    
+    def draw(self):
+        self.display.blit(self.fundo, (0, 0))
+        self.obstaculos.draw(self.display)
+        if len(self.eventos) > 0:
+            for evento in self.eventos:
+                evento.desenhar()
+    
     def checar_eventos(self, evento):
-        if len(self.eventos) == 0:
-            # self.eventos.append(eventos.tubarao(self.display))
-            # self.eventos.append(eventos.caranguejo(self.display))
-            # self.eventos.append(eventos.bando_aguas_vivas(self.display))
-            # self.eventos.append(eventos.bola_de_feno(self.display))
-            # self.eventos.append(eventos.minhocosul(self.display))
-            # self.eventos.append(eventos.nuvem_gafanhotos(self.display))
-            # self.eventos.append(eventos.invasores_do_espaco(self.display))
-            # self.eventos.append(eventos.cometa(self.display))
-            pass
-        # else:
-        #     print(self.eventos)
+        pass
 
+    # @abstractmethod
+    def checar_colisoes(self):
+    # Colisão dos obstáculos com eventos
+        for bloco in self.obstaculos:
+            for evento in self.eventos:
+                colisao = evento.verificar_colisao(bloco, 10)
+                if colisao:
+                    self.obstaculos.remove(bloco)
 
     def criar_obstaculos(self, vida, cor = (0, 0, 0), nome = None, alcance = 0):
         for num_linha, linha in enumerate(self.mapa):
@@ -57,18 +64,18 @@ class jogo:
                         bloco = obstaculo(esquerda, topo, self.largura_blocos, self.altura_blocos, vida, cor, nome)
                         self.obstaculos.add(bloco)
     
-    def draw(self):
-        self.display.blit(self.fundo, (0, 0))
-        self.obstaculos.draw(self.display)
-        if len(self.eventos) > 0:
-            for evento in self.eventos:
-                evento.desenhar()
-    
+    # @abstractmethod
     def gerar_eventos(self):
-        pass
-
-    def construir_mapa(self):
-        pass
+        if len(self.eventos) == 0:
+            # self.eventos.append(eventos.tubarao(self.display))
+            # self.eventos.append(eventos.caranguejo(self.display))
+            # self.eventos.append(eventos.bando_aguas_vivas(self.display))
+            # self.eventos.append(eventos.bola_de_feno(self.display))
+            # self.eventos.append(eventos.verme_da_areia(self.display))
+            # self.eventos.append(eventos.nuvem_gafanhotos(self.display))
+            # self.eventos.append(eventos.invasores_do_espaco(self.display))
+            # self.eventos.append(eventos.cometa(self.display))
+            pass
     
 class oceano(jogo):
     def __init__(self, largura, altura, cor, musica, efeitos):
