@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class jogo(ABC):
     @abstractmethod
-    def __init__(self, largura, altura, cor, musica):
+    def __init__(self, largura, altura, cor, musica, efeitos):
         super().__init__()
         self.largura = largura
         self.altura = altura
@@ -14,9 +14,12 @@ class jogo(ABC):
         self.fundo = pygame.rect.Rect(0, 0, largura, altura)
         self.display.fill(self.cor)
         self.volume_musica = musica
+        self.volume_efeitos = efeitos
         self.relogio = pygame.time.Clock()
         self.eventos : List[eventos.tubarao]= []
         self.frame_atual = 0
+        self.contador_eventos = pygame.time.get_ticks()
+        self.separador_eventos = 2000
 
     def atualizar(self):
         self.checar_eventos(None)
@@ -27,11 +30,12 @@ class jogo(ABC):
                 evento.atualizar()
                 if evento.matar():
                     self.eventos.remove(evento)
+                    self.contador_eventos = pygame.time.get_ticks()
         self.checar_colisoes()
         pygame.display.flip()
         self.frame_atual += 1
     
-    def draw(self):
+    def desenhar(self):
         self.display.blit(self.fundo, (0, 0))
         self.obstaculos.draw(self.display)
         if len(self.eventos) > 0:
@@ -67,19 +71,20 @@ class jogo(ABC):
     # @abstractmethod
     def gerar_eventos(self):
         if len(self.eventos) == 0:
-            # self.eventos.append(eventos.tubarao(self.display))
-            # self.eventos.append(eventos.caranguejo(self.display))
-            # self.eventos.append(eventos.bando_aguas_vivas(self.display))
-            # self.eventos.append(eventos.bola_de_feno(self.display))
-            # self.eventos.append(eventos.verme_da_areia(self.display))
-            # self.eventos.append(eventos.nuvem_gafanhotos(self.display))
-            # self.eventos.append(eventos.invasores_do_espaco(self.display))
-            # self.eventos.append(eventos.cometa(self.display))
-            pass
+            if (pygame.time.get_ticks() - self.contador_eventos) >= self.separador_eventos:
+                # self.eventos.append(eventos.tubarao(self.display, self.volume_efeitos))
+                # self.eventos.append(eventos.caranguejo(self.display, self.volume_efeitos))
+                # self.eventos.append(eventos.bando_aguas_vivas(self.display, self.volume_efeitos))
+                # self.eventos.append(eventos.bola_de_feno(self.display, self.volume_efeitos))
+                # self.eventos.append(eventos.verme_da_areia(self.display, self.volume_efeitos))
+                # self.eventos.append(eventos.nuvem_gafanhotos(self.display, self.volume_efeitos))
+                # self.eventos.append(eventos.invasores_do_espaco(self.display, self.volume_efeitos))
+                # self.eventos.append(eventos.cometa(self.display, self.volume_efeitos))
+                pass
     
 class oceano(jogo):
     def __init__(self, largura, altura, cor, musica, efeitos):
-        super().__init__(largura, altura, cor, musica)
+        super().__init__(largura, altura, cor, musica, efeitos)
         pygame.display.set_caption("Mapa oceano")
         self.fundo = pygame.image.load("../assets/fundos/oceano_1.png")
         self.fundo = pygame.transform.scale(self.fundo, (self.largura, self.altura))
@@ -103,7 +108,7 @@ class oceano(jogo):
 class deserto(jogo):
     def __init__(self, largura, altura, cor, musica, efeitos):
         pygame.display.set_caption("Mapa deserto")
-        super().__init__(largura, altura, cor, musica)
+        super().__init__(largura, altura, cor, musica, efeitos)
         self.fundo = pygame.image.load("../assets/fundos/deserto_1.png")
         self.fundo = pygame.transform.scale(self.fundo, (largura, altura))
         self.mapa = mapa_deserto
@@ -125,7 +130,7 @@ class deserto(jogo):
 
 class espaco(jogo):
     def __init__(self, largura, altura, cor, musica, efeitos):
-        super().__init__(largura, altura, cor, musica)
+        super().__init__(largura, altura, cor, musica, efeitos)
         pygame.display.set_caption("Mapa espaco")
         self.fundo = pygame.image.load("../assets/fundos/espaco_1.png")
         self.fundo = pygame.transform.scale(self.fundo, (largura, altura))

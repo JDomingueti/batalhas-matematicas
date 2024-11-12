@@ -22,7 +22,7 @@ class GerenciadorTelas:
         pygame.mixer.Sound.play(self.musica, -1)
         tempo_press = pygame.time.get_ticks()
         while (self.rodando):
-            if (self.estado == 'menu'):
+            if (self.estado in ['menu', 'opcoes', 'selecao']):
                 eventos: List[pygame.event.Event] = pygame.event.get()
                 for evento in eventos:
                     res = self.display.checar_eventos(evento)
@@ -35,8 +35,13 @@ class GerenciadorTelas:
 
                 if teclas_pressionadas[pygame.K_ESCAPE]:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
-                        pygame.quit()
-                        sys.exit()
+                        if (self.estado == 'menu'):
+                            pygame.quit()
+                            sys.exit()
+                        else:
+                            tempo_press = pygame.time.get_ticks()
+                            self.estado = 'menu'
+                            self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")        
                 teclado = [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT,pygame.K_RETURN]
                 for item in teclado:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
@@ -46,7 +51,7 @@ class GerenciadorTelas:
                             self.interagir(res)
                 
                 self.display.atualizar()
-                self.display.draw()
+                self.display.desenhar()
             
             elif (self.estado == 'jogando'):
 
@@ -61,9 +66,9 @@ class GerenciadorTelas:
                     tempo_press = pygame.time.get_ticks()
                     self.estado = 'menu'
                     self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
-
+                    pygame.mixer.fadeout(100)
                 self.display.atualizar()
-                self.display.draw()
+                self.display.desenhar()
                 
             self.relogio.tick(60)
         pygame.quit()
@@ -72,6 +77,7 @@ class GerenciadorTelas:
         match res:
             case 'selecao':
                 self.display = telas.seletor_jogo(self.largura, self.altura, self.cor, self.volume_efeitos)
+                self.estado = 'selecao'
             case 'oceano':
                 self.display = jogo.oceano(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
                 self.estado = "jogando"
@@ -83,6 +89,7 @@ class GerenciadorTelas:
                 self.estado = "jogando"
             case 'opcoes':
                 self.display = telas.opcoes(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
+                self.estado = 'opcoes'
             case 'voltar':
                 self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
             case 'efeitos':

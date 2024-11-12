@@ -23,7 +23,7 @@ class tela:
         self.botoes = []
         self.pos_botao = 0
     
-    def draw(self):
+    def desenhar(self):
         for botao in self.botoes:
             botao.display_botao(self.display)
 
@@ -149,10 +149,10 @@ class inicio(tela):
             pygame.quit()
             sys.exit()
 
-    def draw(self):
+    def desenhar(self):
         self.display.fill(self.cor)
         self.display.blit(self.imagem, self.rect)
-        super().draw()
+        super().desenhar()
         self.display.blit(self.nome, self.nome_rect)
 
 class opcoes(tela):
@@ -191,9 +191,9 @@ class opcoes(tela):
         if self.musica.destacado or self.musica.focado:
             return("musica")
 
-    def draw(self):
+    def desenhar(self):
         self.display.fill(self.cor)
-        super().draw()
+        super().desenhar()
         self.display.blit(self.nome, self.nome_rect)
 
     def atualizar(self):
@@ -254,8 +254,8 @@ class seletor_jogo(tela):
         super().atualizar()
         self.cenarios.atualizar()
     
-    def draw(self):
+    def desenhar(self):
         self.display.fill(self.cor)
-        super().draw()
+        super().desenhar()
         self.cenarios.display_botao(self.display)
         self.display.blit(self.nome, self.nome_rect)
