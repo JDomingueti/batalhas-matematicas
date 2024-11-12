@@ -28,7 +28,7 @@ class jogo(ABC):
             for evento in self.eventos:
                 evento.aviso_direcao()
                 evento.atualizar()
-                if evento.matar():
+                if evento.matar(self.explodir):
                     self.eventos.remove(evento)
                     self.contador_eventos = pygame.time.get_ticks()
         self.checar_colisoes()
@@ -82,6 +82,10 @@ class jogo(ABC):
                 # self.eventos.append(eventos.cometa(self.display, self.volume_efeitos))
                 pass
     
+    def explodir(self, rect):
+        if isinstance(rect, pygame.Rect):
+            self.eventos.append(eventos.explosao(rect, self.display, self.volume_efeitos))
+
 class oceano(jogo):
     def __init__(self, largura, altura, cor, musica, efeitos):
         super().__init__(largura, altura, cor, musica, efeitos)

@@ -6,22 +6,27 @@ from math import sin
 
 class evento(ABC):
     @abstractmethod
-    def __init__(self, tela: pygame.Surface):
+    def __init__(self, tela: pygame.Surface, volume_efeitos):
         self.largura_tela = tela.get_width()
         self.altura_tela = tela.get_height()
         self.tela = tela
         self.comecou = False
+        self.volume_efeitos = volume_efeitos
         self.lado_inicio = random.choice([-1,1])
         self.contador = pygame.time.get_ticks()
         self.caminho = "../assets/eventos/"
-
-    @abstractmethod
+        
     def aviso_direcao(self):
-        pass
+        if self.comecou and (pygame.time.get_ticks() - self.contador <= 2500):
+            self.tela.blit(self.img_aviso, self.rect_aviso)
 
     @abstractmethod
     def atualizar(self):
-        pass
+        if not self.comecou:
+            self.contador = pygame.time.get_ticks()
+            self.som.play(-1, fade_ms=2000)
+            self.som.set_volume(self.volume_efeitos)
+            self.comecou = True
 
     @abstractmethod
     def desenhar(self):
@@ -41,7 +46,7 @@ class evento(ABC):
 
 class tubarao(evento):
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         self.tamanho = (self.largura_tela//3, self.altura_tela//4)
         self.y_inicio = self.altura_tela//2
         self.x_inicio = -2 * self.tamanho[0] if (self.lado_inicio == 1) else self.largura_tela + self.tamanho[0]
@@ -51,7 +56,7 @@ class tubarao(evento):
             self.imgs_tubarao.append(pygame.transform.scale(pygame.image.load(self.caminho + f"tubarao/{i}.png"), self.tamanho))
             if (self.lado_inicio == -1):
                 self.imgs_tubarao[i-1] = pygame.transform.flip(self.imgs_tubarao[i-1], 1, 0)
-        self.vida = 500
+        self.vida = 400
         self.tubarao_rect = pygame.rect.Rect(self.x_inicio, self.y_inicio - self.tamanho[1]//2, self.tamanho[0], self.tamanho[1])
         self.afastamento_max = random.randint(self.altura_tela//10, self.altura_tela//5)
         self.velocidade_x = 5*self.lado_inicio
@@ -59,31 +64,24 @@ class tubarao(evento):
         self.adicao_velocidade_y = random.choice([-1,1])*(random.randint(self.afastamento_max//2, self.afastamento_max))/self.altura_tela
         self.frame_atual = 0
         self.sprite_atual = 0
-        self.frames_por_sprites = 20
-        self.volume_efeitos = volume_efeitos
+        self.frames_por_sprites = 30
         self.som = pygame.mixer.Sound(self.caminho + "sons/tubarao.mp3")
-        
-    def aviso_direcao(self):
-        if self.comecou and pygame.time.get_ticks() - self.contador <= 2500:
-            x_aviso = self.largura_tela - 30 if (self.lado_inicio == -1) else 30
-            aviso = pygame.rect.Rect(x_aviso, self.y_inicio - 3, 6, 30)
-            pygame.draw.rect(self.tela, (255,0,0), aviso)
-    
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.largura_tela - 2*tamanho_aviso[0] if (self.lado_inicio == -1) else tamanho_aviso[0], self.y_inicio - tamanho_aviso[1]/2)
+        self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
+        self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "tubarao/aviso.png"), tamanho_aviso)
+
     def desenhar(self):
         self.aviso_direcao()
         self.tela.blit(self.imgs_tubarao[self.sprite_atual], self.tubarao_rect)
 
     def atualizar(self):
+        super().atualizar()
         if self.frame_atual >= self.frames_por_sprites:
             self.sprite_atual += 1
             self.sprite_atual %= 8
             self.frame_atual = 0
-        if not self.comecou:
-            self.som.play()
-            self.som.set_volume(self.volume_efeitos)
-            self.contador = pygame.time.get_ticks()
-            self.comecou = True
-        elif pygame.time.get_ticks() - self.contador >= 2000:
+        if (self.comecou and ((pygame.time.get_ticks() - self.contador) >= 2000)):
             self.tubarao_rect.centerx += self.velocidade_x
             self.tubarao_rect.centery -= self.velocidade_y
             if (self.lado_inicio == -1 and self.tubarao_rect.left <= self.largura_tela) or (self.lado_inicio == 1 and self.tubarao_rect.right >= 0):
@@ -102,14 +100,12 @@ class tubarao(evento):
             self.vida = max(self.vida - dano, 0)   
             return True
 
-    def matar(self):
+    def matar(self, callback):
         if (self.vida == 0):
             self.som.fadeout(500)
+            callback(self.tubarao_rect)
             return True
-        if ((self.lado_inicio == 1) and (self.tubarao_rect.left > self.largura_tela)):
-            self.som.fadeout(500)
-            return True
-        elif ((self.lado_inicio == -1) and (self.tubarao_rect.right < 0)):
+        if ((self.tubarao_rect.right < -2 * self.tamanho[0]) or (self.tubarao_rect.left > (self.largura_tela + 2 * self.tamanho[0]))):
             self.som.fadeout(500)
             return True
         return False
@@ -119,9 +115,9 @@ class tubarao(evento):
 
 class caranguejo(evento):
     def __init__(self, tela: pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         
-        self.vida = 1000
+        self.vida = 300
         self.tamanho = (self.largura_tela//4, self.altura_tela//5)
         self.tamanho_garras = (2*self.tamanho[1]//3, self.tamanho[1])
 
@@ -140,7 +136,6 @@ class caranguejo(evento):
         self.garra_esquerda_rect_atual = self.garra_esquerda_rect 
         self.garra_direita_rect_atual = self.garra_direita_rect
 
-        # self.caminho += ""
         self.imgs_corpo = []
         self.imgs_esquerda = []
         self.imgs_esquerda_est = []
@@ -159,19 +154,17 @@ class caranguejo(evento):
         self.garra_esticada = False
         # Garra 1 -> Esquerda; Garra -1 -> Direita
         self.prox_garra = 1    
-        # [Garra_esquerda, Corpo, Garra_direita, Garra_estendida]
+        # Sprites: [Garra_esquerda, Corpo, Garra_direita, Garra_estendida]
         self.sprites_atuais = [0, 0, 0, 0]
         self.frames_por_sprites = 30
         self.frame_atual = 0
-        self.volume_efeitos = volume_efeitos
         self.som = pygame.mixer.Sound(self.caminho + "sons/caranguejo1.mp3")
-        
-    def aviso_direcao(self):
-        if (self.comecou and (pygame.time.get_ticks() - self.contador <= 2500)):
-            x_aviso = self.largura_tela - 30 if (self.lado_inicio == -1) else 30
-            aviso = pygame.rect.Rect(x_aviso, self.y_inicio - 3, 6, 30)
-            pygame.draw.rect(self.tela, (255,0,0), aviso)
 
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.largura_tela - 2*tamanho_aviso[0] if (self.lado_inicio == -1) else tamanho_aviso[0], self.y_inicio - tamanho_aviso[1]/2)
+        self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
+        self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "caranguejo/aviso.png"), tamanho_aviso)
+    
     def desenhar(self):
         self.aviso_direcao()
         if self.garra_esticada:
@@ -191,18 +184,13 @@ class caranguejo(evento):
         self.tela.blit(self.imgs_corpo[self.sprites_atuais[1]], self.caranguejo_rect)
         
     def atualizar(self):
-        if not self.comecou:
-            self.contador = pygame.time.get_ticks()
-            self.comecou = True
-            self.som.play()
-            self.som.set_volume(self.volume_efeitos)
+        super().atualizar()
         if self.frame_atual >= self.frames_por_sprites:
             for i in range(3):
                 self.sprites_atuais[i] = (self.sprites_atuais[i] + 1) % 2
             self.frame_atual = 0
-            
-    
-        elif pygame.time.get_ticks() - self.contador >= 2000:
+        
+        if (self.comecou and ((pygame.time.get_ticks() - self.contador) >= 2000)):
             if self.garra_esticada and pygame.time.get_ticks() - self.contador_garras > 250:
                 self.sprites_atuais[3] = 1
             self.caranguejo_rect.centerx += self.velocidade_x
@@ -245,14 +233,12 @@ class caranguejo(evento):
                 self.vida = max(self.vida - dano, 0)
         return colidiu
 
-    def matar(self):
+    def matar(self, callback):
         if (self.vida == 0):
             self.som.fadeout(500)
+            callback(self.caranguejo_rect)
             return True
-        if ((self.lado_inicio == 1) and (self.caranguejo_rect.left > self.largura_tela)):
-            self.som.fadeout(500)
-            return True
-        elif ((self.lado_inicio == -1) and (self.caranguejo_rect.right < 0)):
+        if (((self.caranguejo_rect.right < -2 * self.tamanho[0])) or (self.caranguejo_rect.left > (self.largura_tela + 2 * self.tamanho[0]))):
             self.som.fadeout(500)
             return True
         return False
@@ -262,11 +248,11 @@ class caranguejo(evento):
 
 class bando_aguas_vivas(evento):
     def __init__(self, tela : pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         self.tamanho = (self.largura_tela//15, self.altura_tela//8)
         self.y_inicio = random.randint(self.altura_tela//7, 6*self.altura_tela//7)
         self.quantidade_spawn = random.randint(5,8)
-        self.x_inicio = self.largura_tela + 30 if (self.lado_inicio == -1) else -60
+        self.x_inicio = self.largura_tela + self.tamanho[0] if (self.lado_inicio == -1) else -2*self.tamanho[0]
         self.max_velocidade_x = random.randint(4,6)
         self.imgs_agua_viva = []
         
@@ -277,20 +263,17 @@ class bando_aguas_vivas(evento):
         self.afastamento = self.altura_tela//7
         self.separador_spawn = pygame.time.get_ticks()
         self.quantidade_spawnada = 0
-        self.vida = 30
+        self.vida = 40
         self.vidas = []
         self.agua_viva_rects = []
         self.imgs = []
         self.frame_por_sprite = 30
         self.frame_atual = 0
-        self.volume_efeitos = volume_efeitos
         self.som = pygame.mixer.Sound(self.caminho + "sons/bolhas1.mp3")
-
-    def aviso_direcao(self):
-        if (self.comecou and (pygame.time.get_ticks() - self.contador <= 2500)):
-            x_aviso = self.largura_tela - 30 if (self.lado_inicio == -1) else 30
-            aviso = pygame.rect.Rect(x_aviso, self.y_inicio - 3, 6, 30)
-            pygame.draw.rect(self.tela, (77,77,189), aviso)
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.largura_tela - 2*tamanho_aviso[0] if (self.lado_inicio == -1) else tamanho_aviso[0], self.y_inicio - tamanho_aviso[1]/2)
+        self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
+        self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "agua_viva/aviso.png"), tamanho_aviso)
     
     def desenhar(self):
         self.aviso_direcao()
@@ -300,17 +283,13 @@ class bando_aguas_vivas(evento):
                 self.tela.blit(img, agua_viva)
         
     def atualizar(self):
+        super().atualizar()
         if self.frame_atual >= 30:
             for i in range(len(self.imgs)):
                 self.imgs[i] += 1
                 self.imgs[i] %= 4
             self.frame_atual = 0
-        if not self.comecou:
-            self.contador = pygame.time.get_ticks()
-            self.comecou = True
-            self.som.play(-1)
-            self.som.set_volume(self.volume_efeitos)
-        else:
+        if (self.comecou and ((pygame.time.get_ticks() - self.contador) > 2000)):
             if len(self.agua_viva_rects) < self.quantidade_spawn:
                 if ((pygame.time.get_ticks() - self.separador_spawn) > 400):
                     if self.quantidade_spawnada < self.quantidade_spawn:
@@ -339,13 +318,14 @@ class bando_aguas_vivas(evento):
                 colidiu = True
         return colidiu
 
-    def matar(self):
+    def matar(self, callback):
         if len(self.agua_viva_rects) > 0:
             for pos, agua_viva in enumerate(self.agua_viva_rects):
-                if ((self.lado_inicio == 1) and (agua_viva.left > self.largura_tela)):
+                if ((agua_viva.right < -2 * self.tamanho[0]) and (agua_viva.left > (self.largura_tela + 2 * self.tamanho[0]))):
                     self.agua_viva_rects.pop(pos)
                     self.imgs.pop(pos)
-                elif ((self.lado_inicio == -1) and (agua_viva.right < 0)):
+                if (self.vidas[pos] == 0):
+                    callback(self.agua_viva_rects[pos])
                     self.agua_viva_rects.pop(pos)
                     self.imgs.pop(pos)
         elif self.comecou and self.quantidade_spawnada > 0:
@@ -358,14 +338,12 @@ class bando_aguas_vivas(evento):
     
 class bola_de_feno(evento):
     def __init__(self, tela: pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         self.tamanho = self.largura_tela//10
         self.y_inicio = random.randint(self.altura_tela//4, 3*self.altura_tela//4)
         self.x_inicio = -2*self.tamanho if (self.lado_inicio == 1) else self.largura_tela + self.tamanho
         self.velocidade_y = 0
-        self.velocidade_x = 0
-        self.max_velocidade_x = random.randint(4,7)
-        self.velocidade_incremento_x = self.lado_inicio/2
+        self.velocidade_x = random.randint(4,7) * self.lado_inicio
         self.aux_y = 0
         
         self.imgs = []
@@ -375,34 +353,25 @@ class bola_de_feno(evento):
         self.bola_de_feno = pygame.transform.scale(self.bola_de_feno, (self.tamanho, self.tamanho))
         self.bola_de_feno_rect = self.imgs[0].get_rect()
         self.bola_de_feno_rect.topleft = (self.x_inicio - self.tamanho//2, self.y_inicio - self.tamanho//2)
-        self.vida = 200
+        self.vida = 80
         self.sprite_atual = 0
         self.frames_por_sprite = 30
         self.frame_atual = 0
-        self.volume_efeitos = volume_efeitos
         self.som = pygame.mixer.Sound(self.caminho + "sons/vento.mp3")
-        self.som.set_volume(0.3)
-        
-    def aviso_direcao(self):
-        if self.comecou and pygame.time.get_ticks() - self.contador <= 2500:
-            x_aviso = self.largura_tela - 30 if (self.lado_inicio == -1) else 30
-            aviso = pygame.rect.Rect(x_aviso, self.y_inicio - 3, 6, 30)
-            pygame.draw.rect(self.tela, (231,231,0), aviso)
-
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.largura_tela - self.tamanho/2 if (self.lado_inicio == -1) else self.tamanho/2, self.y_inicio - tamanho_aviso[1]/2)
+        self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
+        self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "bola_de_feno/aviso.png"), tamanho_aviso)
+     
     def atualizar(self):
+        super().atualizar()
         if self.frame_atual >= self.frames_por_sprite:
             self.sprite_atual += self.lado_inicio
             self.sprite_atual %= 4
-            self.frame_atual = 0    
-        if not self.comecou:
-            self.contador = pygame.time.get_ticks()
-            self.comecou = True
-            self.som.play(-1)
-            self.som.set_volume(self.volume_efeitos)
-        elif pygame.time.get_ticks() - self.contador > 2000:
-            if abs(self.velocidade_x) < self.max_velocidade_x:
-                self.velocidade_x += self.velocidade_incremento_x
-            self.bola_de_feno_rect.centery += 2*self.max_velocidade_x*sin(self.aux_y)
+            self.frame_atual = 0
+        if (self.comecou and ((pygame.time.get_ticks() - self.contador) > 2000)):
+            if self.bola_de_feno_rect.right > 0 and self.bola_de_feno_rect.left < self.largura_tela: 
+                self.bola_de_feno_rect.centery += 2*self.velocidade_x*sin(self.aux_y)
             self.bola_de_feno_rect.centerx += self.velocidade_x
             self.aux_y += 0.1
         self.frame_atual += 1
@@ -410,7 +379,7 @@ class bola_de_feno(evento):
     def desenhar(self):
         self.aviso_direcao()        
         centro = self.bola_de_feno_rect.center
-        img = pygame.transform.rotate(self.bola_de_feno, -10*self.max_velocidade_x*self.lado_inicio*self.aux_y/2)
+        img = pygame.transform.rotate(self.bola_de_feno, -10*self.velocidade_x*self.lado_inicio*self.aux_y/2)
         rect = img.get_rect()
         rect.center = centro
         self.tela.blit(img, rect)
@@ -420,14 +389,12 @@ class bola_de_feno(evento):
             self.vida = max(self.vida - dano, 0)
             return True
 
-    def matar(self):
-        if ((self.lado_inicio == 1) and (self.bola_de_feno_rect.left > self.largura_tela)):
-            self.som.fadeout(500)
-            return True
-        elif ((self.lado_inicio == -1) and (self.bola_de_feno_rect.right < 0)):
+    def matar(self, callback):
+        if ((self.bola_de_feno_rect.right < -2 * self.tamanho) or (self.bola_de_feno_rect.left > (self.largura_tela + 2 * self.tamanho))):
             self.som.fadeout(500)
             return True
         elif self.vida == 0:
+            callback(self.bola_de_feno_rect)
             self.som.fadeout(500)
             return True
         return False
@@ -437,7 +404,7 @@ class bola_de_feno(evento):
 
 class verme_da_areia(evento):
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         self.x_inicio = random.randint(0, self.largura_tela//3)
         self.x_fim = self.largura_tela - self.x_inicio
         self.tamanho = random.randint(40, 50)
@@ -461,27 +428,24 @@ class verme_da_areia(evento):
         
         self.tamanho_corpo = random.randint(6,10)
         self.partes_criadas = 0
-        self.vida = 50
+        self.vida = 30
         self.verme_da_areia_rects = []
         self.verme_da_areia_vidas = []
         self.velocidades_verme_da_areia : list[pygame.Vector2]= []
         self.separador_corpo = pygame.time.get_ticks()
-        self.volume_efeitos = volume_efeitos
         self.som = pygame.mixer.Sound(self.caminho + "sons/Roar_1.mp3")
         
-    def aviso_direcao(self):
-        if self.comecou and pygame.time.get_ticks() - self.contador <= 2500:
-            y_aviso = self.altura_tela - 90
-            aviso = pygame.rect.Rect(self.x_inicio - 5, y_aviso, 10, 40)
-            pygame.draw.rect(self.tela, (0,0,0), aviso)
-
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.x_inicio - tamanho_aviso[0]/2, self.altura_tela - 2*tamanho_aviso[1])
+        
+        angulo = pygame.Vector2((self.velocidade_x, self.velocidade_y_inicial)).angle_to((0,1))
+        img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "verme_da_areia/aviso.png"), tamanho_aviso)
+        self.img_aviso = pygame.transform.rotate(img_aviso, -angulo)
+        self.rect_aviso = (posicao_aviso, self.img_aviso.get_size())
+        
     def atualizar(self):
-        if not self.comecou:
-            self.contador = pygame.time.get_ticks()
-            self.comecou = True
-            self.som.play(-1)
-            self.som.set_volume(self.volume_efeitos)
-        elif (pygame.time.get_ticks() - self.contador > 2000):
+        super().atualizar()
+        if (self.comecou and (pygame.time.get_ticks() - self.contador > 2000)):
             if ((pygame.time.get_ticks() - self.separador_corpo > 45) and (self.partes_criadas < (self.tamanho_corpo))):
                     self.criar_corpo()
                     self.separador_corpo = pygame.time.get_ticks()
@@ -536,17 +500,24 @@ class verme_da_areia(evento):
             if rect.colliderect(rect_obj):
                 colidiu = True
                 self.verme_da_areia_vidas[pos] = max(self.verme_da_areia_vidas[pos] - dano, 0)
-                if (self.verme_da_areia_vidas[pos] == 0):
-                    self.verme_da_areia_rects.pop(pos)
-                    self.verme_da_areia_vidas.pop(pos)
-                    self.velocidades_verme_da_areia.pop(pos)
-                    pos -= 1
         return colidiu
 
-    def matar(self):
+    def matar(self, callback):
+        matar_pos = []
+        for pos in range(len(self.verme_da_areia_vidas)):
+            if (self.verme_da_areia_vidas[pos] == 0):
+                matar_pos.append(pos)
+        if len(matar_pos) > 0:
+            for pos in matar_pos:
+                callback(self.verme_da_areia_rects[pos])
+                self.verme_da_areia_rects.pop(pos)
+                self.verme_da_areia_vidas.pop(pos)
+                self.velocidades_verme_da_areia.pop(pos)
         if len(self.verme_da_areia_rects) > 0:
             for rect in self.verme_da_areia_rects:
                 if rect.bottom > self.altura_tela + 2 * self.tamanho:
+                    self.verme_da_areia_rects.remove(rect)
+                elif ((rect.left > self.largura_tela) or (rect.right < 0)):
                     self.verme_da_areia_rects.remove(rect)
         if len(self.verme_da_areia_rects) == 0 and self.partes_criadas > 0:
             self.som.fadeout(100)
@@ -559,12 +530,10 @@ class verme_da_areia(evento):
     
 class nuvem_gafanhotos(evento):
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         self.tamanho = 20
         self.vida = 10
-        self.velocidade_x = 0
-        self.velocidade_x_max = random.randint(4,8)
-        self.incremento_velocidade = random.randint(10,20)/10 * self.lado_inicio
+        self.velocidade_x =  random.randint(4,8) * self.lado_inicio
         self.metade_y_tela = random.choice([1,2])
         self.x_inicio = self.largura_tela + self.tamanho if self.lado_inicio == -1 else -2 * self.tamanho
         self.y_inicio = self.altura_tela//2 + self.altura_tela//4 * (-1 if self.metade_y_tela == 1 else 1)
@@ -581,37 +550,26 @@ class nuvem_gafanhotos(evento):
         self.imgs = []
         self.frame_atual = 0
         self.frames_por_sprite = 10
-        self.volume_efeitos = volume_efeitos
         self.som = pygame.mixer.Sound(self.caminho + "sons/gafanhoto2.mp3")
-        self.som.set_volume(0.8)
-        
-
-    def aviso_direcao(self):
-        if self.comecou and pygame.time.get_ticks() - self.contador <= 2500:
-            x_aviso = self.largura_tela - 40 if (self.lado_inicio == -1) else 40
-            aviso = pygame.rect.Rect(x_aviso, self.y_inicio, 10, 40)
-            pygame.draw.rect(self.tela, (50,155,50), aviso)
-
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.largura_tela - 2*tamanho_aviso[0] if (self.lado_inicio == -1) else tamanho_aviso[0], self.y_inicio - tamanho_aviso[1]/2)
+        self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
+        self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "gafanhoto/aviso.png"), tamanho_aviso)
+       
     def atualizar(self):
+        super().atualizar()
         if self.frame_atual >= self.frames_por_sprite:
             for pos in range(len(self.imgs)):
                 self.imgs[pos] += 1
                 self.imgs[pos] %= 4 
             self.frame_atual = 0
-        if not self.comecou:
-            self.som.play(-1,fade_ms=2000)
-            self.som.set_volume(self.volume_efeitos)
-            self.contador = pygame.time.get_ticks()
-            self.comecou = True
-        elif pygame.time.get_ticks() - self.contador >= 2000:
+        if (self.comecou and (pygame.time.get_ticks() - self.contador >= 2000)):
             if self.quantidade_spawnada < self.quantidade_maxima:
                 if (pygame.time.get_ticks() - self.separador_gafanhotos) > 2000/self.quantidade_maxima:
                     self.criar_gafanhoto()
                     self.separador_gafanhotos = pygame.time.get_ticks()
             for gafanhoto in self.gafanhotos_rects:
                 gafanhoto.centerx += self.velocidade_x
-                if abs(self.velocidade_x) < self.velocidade_x_max:
-                    self.velocidade_x += self.incremento_velocidade
         self.frame_atual += 1
 
     def desenhar(self):
@@ -635,24 +593,23 @@ class nuvem_gafanhotos(evento):
                 self.vidas[pos] = max(self.vidas[pos] - dano, 0)
         return colidiu
 
-    def matar(self):
+    def matar(self, callback):
         for pos, gafanhoto in enumerate(self.gafanhotos_rects):
-            if ((self.lado_inicio == 1) and (gafanhoto.left > self.largura_tela)):
-                self.gafanhotos_rects.pop(pos)
-                self.vidas.pop(pos)
-                self.imgs.pop(pos)
-            elif ((self.lado_inicio == -1) and (gafanhoto.right < 0)):
+            if ((gafanhoto.right < -2 * self.tamanho) or (gafanhoto.left > (self.largura_tela + 2 * self.tamanho))):
                 self.gafanhotos_rects.pop(pos)
                 self.vidas.pop(pos)
                 self.imgs.pop(pos)
             elif (len(self.vidas) > 0):
+                matar_pos = []
                 for pos, item in enumerate(self.vidas):
                     if item == 0:
-                        self.gafanhotos_rects.pop(pos)
-                        self.imgs.pop(pos)
-                        self.vidas.pop(pos)
-                        pos -= 1
-
+                        matar_pos.append(pos)
+                        callback(self.gafanhotos_rects[pos])
+                for pos in matar_pos:
+                    self.gafanhotos_rects.pop(pos)
+                    self.imgs.pop(pos)
+                    self.vidas.pop(pos)
+                        
         if ((len(self.gafanhotos_rects) == 0) and (self.quantidade_spawnada > 0)):
             self.som.fadeout(500)
             return True
@@ -663,7 +620,7 @@ class nuvem_gafanhotos(evento):
     
 class invasores_do_espaco(evento):
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         self.velocidade_y = 3
         self.num_linhas = 3
         self.num_colunas = 5
@@ -684,20 +641,19 @@ class invasores_do_espaco(evento):
             self.img_linha_2.append(pygame.transform.scale(pygame.image.load(self.caminho + f"space/inimigo2/{i}.png"), (self.tamanho_x, self.tamanho_y)))
             self.img_linha_3.append(pygame.transform.scale(pygame.image.load(self.caminho + f"space/inimigo3/{i}.png"), (self.tamanho_x, self.tamanho_y)))
         self.img_nave_antiga = pygame.transform.scale(pygame.image.load(self.caminho + "space/nave.png"), self.tamanho_nave)            
-        self.vida_nave = 30
+        self.vida_nave = 50
         self.nave_antiga_rect = pygame.Rect
         self.criar_inimigos()
+
         self.frames_por_sprite = 30
         self.sprite_atual = 0
         self.frame_atual = 0
-        self.volume_efeitos = volume_efeitos
         self.som = pygame.mixer.Sound(self.caminho + "sons/space3.mp3")
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.largura_tela/2 - tamanho_aviso[0]/2, tamanho_aviso[1])
+        self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
+        self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "space/aviso.png"), tamanho_aviso)
 
-    def aviso_direcao(self):
-        if self.comecou and (pygame.time.get_ticks() - self.contador <= 2500):
-            aviso = pygame.rect.Rect(self.largura_tela//2 - 5, 10, 10, 40)
-            pygame.draw.rect(self.tela, (255,0,0), aviso)
-    
     def criar_inimigos(self):
         for i in range(self.num_linhas):
             for j in range(self.num_colunas):
@@ -725,16 +681,12 @@ class invasores_do_espaco(evento):
             self.tela.blit(self.img_nave_antiga, self.nave_antiga_rect)
 
     def atualizar(self):
+        super().atualizar()
         if self.frame_atual >= self.frames_por_sprite:
             self.sprite_atual += 1
             self.sprite_atual %= 2
             self.frame_atual = 0
-        if not self.comecou:
-            self.contador = pygame.time.get_ticks()
-            self.som.play(-1, fade_ms = 1500)
-            self.som.set_volume(self.volume_efeitos)
-            self.comecou = True
-        elif (pygame.time.get_ticks() - self.contador) >= 2500:
+        if (self.comecou and ((pygame.time.get_ticks() - self.contador) >= 2500)):
             for linha in self.matriz_inimigos:
                 for inimigo in linha:
                     inimigo.centery += self.velocidade_y
@@ -748,24 +700,29 @@ class invasores_do_espaco(evento):
             for j, rect in enumerate(linha):
                 if rect.colliderect(rect_obj):
                     colidiu = True
-                    self.vidas_inimigos[i][j] = max(self.vidas_inimigos[i][j] - dano, 0)
-                    if self.vidas_inimigos[i][j] == 0:
-                        self.vidas_inimigos[i].pop(j)
-                        self.matriz_inimigos[i].pop(j) 
-                        if len(self.matriz_inimigos[i]) == 0:
-                            self.matriz_inimigos.pop(i)
-                            self.vidas_inimigos.pop(i)
+                    self.vidas_inimigos[i][j] = max(self.vidas_inimigos[i][j] - dano, 0)            
         if self.nave_antiga_rect != None:
             if self.nave_antiga_rect.colliderect(rect_obj):
                 colidiu = True
                 self.vida_nave = max(self.vida_nave - dano, 0)
-                if self.vida_nave == 0:
-                    self.nave_antiga_rect = None
         return colidiu
 
-    def matar(self):
+    def matar(self, callback):
+        if self.vida_nave == 0:
+            callback(self.nave_antiga_rect)
+            self.nave_antiga_rect = None
+        for i, linha in enumerate(self.matriz_inimigos):
+            for j, rect in enumerate(linha):
+                if self.vidas_inimigos[i][j] == 0:
+                    self.vidas_inimigos[i].pop(j)
+                    self.matriz_inimigos[i].pop(j)
+                    callback(rect)
+                if len(self.matriz_inimigos[i]) == 0:
+                    self.matriz_inimigos.pop(i)
+                    self.vidas_inimigos.pop(i)
         if self.comecou:
             if self.nave_antiga_rect == None and len(self.matriz_inimigos) == 0:
+                callback(self.nave_antiga_rect)
                 self.som.fadeout(500)
                 return True
             elif self.nave_antiga_rect != None and self.nave_antiga_rect.top > self.altura_tela:
@@ -783,15 +740,15 @@ class invasores_do_espaco(evento):
     
 class cometa(evento):
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela)
+        super().__init__(tela, volume_efeitos)
         self.tamanho = (self.largura_tela//6, self.largura_tela//4)
         self.x_inicio = random.randint(0, self.largura_tela//2) if self.lado_inicio == 1 else random.randint(self.largura_tela//2, self.largura_tela) 
         self.x_fim = random.randint(self.largura_tela//2, self.largura_tela) if self.lado_inicio == 1 else random.randint(0, self.largura_tela//2)
         self.tempo_em_tela = random.randint(5,10)*10
         self.velocidade_y = self.altura_tela//self.tempo_em_tela
         self.velocidade_x = (self.x_fim - self.x_inicio)//self.tempo_em_tela
-        self.vida = 300
-        self.cometa_rect = pygame.rect.Rect(self.x_inicio - self.tamanho[0]//2, -2*self.tamanho[1], self.tamanho[0], self.tamanho[1])
+        self.vida = 200
+        self.cometa_rect = pygame.rect.Rect(self.x_inicio, -2*self.tamanho[1], self.tamanho[0], self.tamanho[1])
         self.imgs = []
         for i in range(1,5):
             self.imgs.append(pygame.transform.scale(pygame.image.load(self.caminho + f"cometa/{i}.png"), (self.tamanho[0], self.tamanho[1])))
@@ -799,39 +756,24 @@ class cometa(evento):
         self.sprite_atual = 0
         self.frames_por_sprite = 15
         self.angulo = 0
-        self.volume_efeitos = volume_efeitos
         self.som = pygame.mixer.Sound(self.caminho + "sons/fireball.mp3")
-
-    def aviso_direcao(self):
-        if self.comecou and (pygame.time.get_ticks() - self.contador <= 2500):
-            aviso_surf = pygame.Surface((10, 40))
-            aviso_surf.fill((255,255,255))
-            aviso_surf.set_colorkey((0,0,0))
-            aviso_rect0 = aviso_surf.get_rect()
-            aviso_rect0.center = (self.x_inicio + self.lado_inicio * 40, 40)
-            aviso_rect1 = aviso_surf.get_rect()
-            aviso_rect1.center = aviso_rect0.center
-            aviso_surf = pygame.transform.rotate(aviso_surf, self.angulo)
-            self.tela.blit(aviso_surf, aviso_rect1)
+        self.angulo = pygame.Vector2(self.velocidade_x, self.velocidade_y).angle_to(pygame.Vector2(0, 1))
+        tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
+        posicao_aviso = (self.x_inicio, tamanho_aviso[1]/2)
+        img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "cometa/aviso.png"), tamanho_aviso)
+        self.img_aviso = pygame.transform.rotate(img_aviso, self.angulo)
+        self.rect_aviso = pygame.Rect(posicao_aviso, self.img_aviso.get_size())
 
     def atualizar(self):
+        super().atualizar()
         if self.frame_atual >= self.frames_por_sprite:
             self.sprite_atual += 1
             self.sprite_atual %= 4
             self.frame_atual = 0
-        if not self.comecou:
-            self.contador = pygame.time.get_ticks()
-            self.som.play(fade_ms=2000)
-            self.som.set_volume(self.volume_efeitos)
-            self.comecou = True
-        elif (pygame.time.get_ticks() - self.contador) >= 2500:
+        if (self.comecou and ((pygame.time.get_ticks() - self.contador) >= 2500)):
             if (self.cometa_rect.bottom >= 0):
                 self.cometa_rect.centerx += self.velocidade_x
-                self.cometa_rect.centery += self.velocidade_y
-            else:
-                self.cometa_rect.centery += self.velocidade_y
-        direcao = pygame.Vector2(self.velocidade_x, self.velocidade_y)
-        self.angulo = direcao.angle_to(pygame.Vector2(0, 1))
+            self.cometa_rect.centery += self.velocidade_y
         self.frame_atual += 1
 
     def desenhar(self):
@@ -847,11 +789,60 @@ class cometa(evento):
             self.vida = max(self.vida - dano, 0)
             return True
 
-    def matar(self):
+    def matar(self, callback):
         if self.cometa_rect.top > self.altura_tela or self.vida == 0:
             self.som.fadeout(1000)
+            callback(self.cometa_rect)
             return True
         return False
     
     def pegar_rect(self):
         return [self.cometa_rect]
+    
+class explosao(evento):
+    def __init__(self, rect: pygame.Rect, tela: pygame.Surface, volume_efeitos: pygame.mixer.Sound):
+        self.tela = tela
+        caminho = "../assets/eventos/"
+        self.imgs = []
+        for i in range(1,4):
+            img = pygame.image.load(caminho + f"explosao/{i}.png")
+            img = pygame.transform.scale(img, rect.size)
+            self.imgs.append(img)
+        self.rect = pygame.Rect(rect.topleft, rect.size)
+        self.volume_efeitos = volume_efeitos
+        self.som = pygame.mixer.Sound(caminho + "sons/explosion.wav")
+        self.comecou = False
+        self.destruir = False
+        self.sprite_atual = 0
+        self.frame_atual = 0
+        self.frames_por_sprites = 20
+
+    def aviso_direcao(self):
+        pass
+
+    def atualizar(self):
+        if not self.comecou:
+            self.som.play(fade_ms=100)
+            self.som.set_volume(self.volume_efeitos)
+        if (self.frame_atual >= self.frames_por_sprites):
+            if self.sprite_atual < 2:
+                self.frame_atual = 0
+                self.sprite_atual += 1
+            else:
+
+                self.destruir = True
+        self.frame_atual += 1
+
+    def desenhar(self):
+        self.tela.blit(self.imgs[self.sprite_atual], self.rect)
+
+    def verificar_colisao(self, rect_obj: pygame.Rect, dano: int):
+        pass
+
+    def matar(self, callback):
+        if self.destruir:
+            self.som.fadeout(100)
+        return self.destruir
+    
+    def pegar_rect(self):
+        return None
