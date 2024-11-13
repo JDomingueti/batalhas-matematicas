@@ -69,6 +69,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         self.velocidade_vertical = 2
         self.velocidade_horizontal = 3
         self.limite_superior = 50
+        self.ultimo_tempo_colisao = pygame.time.get_ticks()
 
     @abstractmethod
     def update(self):
@@ -80,146 +81,170 @@ class Inimigo(pygame.sprite.Sprite, ABC):
 class Inimigo1(Inimigo):
     def __init__(self, path_image, x, largura, altura, tamanho):
         super().__init__(path_image, x, largura, altura, tamanho)
-        self.velocidade_horizontal = 4
+        
+        self.velocidade_horizontal = 2
         self.velocidade_vertical = 3
         self.direcao_horizontal = random.choice([-1, 1])  
         self.direcao_vertical = random.choice([-1, 1]) 
-        self.mudei_direcao_em = pygame.time.get_ticks()  # Guarda o momento em que a direção foi escolhida
-        self.tempo_troca_direcao = random.randint(1, 3) * 1000
         
+        self.mudei_direcao_em = pygame.time.get_ticks()
+        self.tempo_troca_direcao = random.randint(2, 5) * 1000
+
     def update(self):
-        # Verifica se o tempo de troca de direção passou
+        # Verifica se o tempo para troca de direção já passou
         if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks() 
-            self.tempo_troca_direcao = random.randint(1, 3) * 1000
+            self.mudei_direcao_em = pygame.time.get_ticks()
+            self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-            # Escolhe uma nova direção aleatória
-            self.direcao_horizontal = random.choice([-1, 1])  # -1 = esquerda, 1 = direita
-            self.direcao_vertical = random.choice([-1, 1])    # -1 = cima, 1 = baixo
+            # Escolhe novas direções aleatórias
+            self.direcao_horizontal = random.choice([-1, 1])
+            self.direcao_vertical = random.choice([-1, 1])
 
-        # Novas posições
+        # Calcula as novas posições
         nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
         nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
 
-        # Verificando se a nova posição horizontal está dentro dos limites
+        # Verifica se a nova posição está dentro dos limites da tela
         if 0 <= nova_pos_x <= self.largura - self.tamanho:
             self.rect.x = nova_pos_x
         else:
             self.direcao_horizontal *= -1 
-
-        # Verificando se a nova posição vertical está dentro dos limites, respeitando o limite superior
         if self.limite_superior <= nova_pos_y <= self.altura - self.tamanho:
             self.rect.y = nova_pos_y
         else:
-            self.direcao_vertical *= -1
+            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
+            if nova_pos_y < self.limite_superior:  # Atingiu o topo
+                self.direcao_vertical = 1  # Vai para baixo
+            elif nova_pos_y > self.altura - self.tamanho:  # Atingiu o fundo
+                self.direcao_vertical = -1  # Vai para cima
+            else:
+                self.direcao_vertical *= -1 
 
 class Inimigo2(Inimigo):
     def __init__(self, path_image, x, largura, altura, tamanho):
         super().__init__(path_image, x, largura, altura, tamanho)
-        self.velocidade_horizontal = 4
+        
+        self.velocidade_horizontal = 2
         self.velocidade_vertical = 3
         self.direcao_horizontal = random.choice([-1, 1])  
         self.direcao_vertical = random.choice([-1, 1]) 
-        self.mudei_direcao_em = pygame.time.get_ticks()  # Guarda o momento em que a direção foi escolhida
-        self.tempo_troca_direcao = random.randint(1, 3) * 1000
         
+        self.mudei_direcao_em = pygame.time.get_ticks()
+        self.tempo_troca_direcao = random.randint(2, 5) * 1000
+
     def update(self):
-        # Verifica se o tempo de troca de direção passou
+        # Verifica se o tempo para troca de direção já passou
         if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks() 
-            self.tempo_troca_direcao = random.randint(1, 3) * 1000
+            self.mudei_direcao_em = pygame.time.get_ticks()
+            self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-            # Escolhe uma nova direção aleatória
-            self.direcao_horizontal = random.choice([-1, 1])  # -1 = esquerda, 1 = direita
-            self.direcao_vertical = random.choice([-1, 1])    # -1 = cima, 1 = baixo
+            # Escolhe novas direções aleatórias
+            self.direcao_horizontal = random.choice([-1, 1])
+            self.direcao_vertical = random.choice([-1, 1])
 
-        # Novas posições
+        # Calcula as novas posições
         nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
         nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
 
-        # Verificando se a nova posição horizontal está dentro dos limites
+        # Verifica se a nova posição está dentro dos limites da tela
         if 0 <= nova_pos_x <= self.largura - self.tamanho:
             self.rect.x = nova_pos_x
         else:
             self.direcao_horizontal *= -1 
-
-        # Verificando se a nova posição vertical está dentro dos limites, respeitando o limite superior
         if self.limite_superior <= nova_pos_y <= self.altura - self.tamanho:
             self.rect.y = nova_pos_y
         else:
-            self.direcao_vertical *= -1
+            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
+            if nova_pos_y < self.limite_superior:  # Atingiu o topo
+                self.direcao_vertical = 1  # Vai para baixo
+            elif nova_pos_y > self.altura - self.tamanho:  # Atingiu o fundo
+                self.direcao_vertical = -1  # Vai para cima
+            else:
+                self.direcao_vertical *= -1 
 
 class Inimigo3(Inimigo):
     def __init__(self, path_image, x, largura, altura, tamanho):
         super().__init__(path_image, x, largura, altura, tamanho)
-        self.velocidade_horizontal = 4
+        
+        self.velocidade_horizontal = 2
         self.velocidade_vertical = 3
         self.direcao_horizontal = random.choice([-1, 1])  
         self.direcao_vertical = random.choice([-1, 1]) 
-        self.mudei_direcao_em = pygame.time.get_ticks()  # Guarda o momento em que a direção foi escolhida
-        self.tempo_troca_direcao = random.randint(1, 3) * 1000
         
+        self.mudei_direcao_em = pygame.time.get_ticks()
+        self.tempo_troca_direcao = random.randint(2, 5) * 1000
+
     def update(self):
-        # Verifica se o tempo de troca de direção passou
+        # Verifica se o tempo para troca de direção já passou
         if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks() 
-            self.tempo_troca_direcao = random.randint(1, 3) * 1000
+            self.mudei_direcao_em = pygame.time.get_ticks()
+            self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-            # Escolhe uma nova direção aleatória
-            self.direcao_horizontal = random.choice([-1, 1])  # -1 = esquerda, 1 = direita
-            self.direcao_vertical = random.choice([-1, 1])    # -1 = cima, 1 = baixo
+            # Escolhe novas direções aleatórias
+            self.direcao_horizontal = random.choice([-1, 1])
+            self.direcao_vertical = random.choice([-1, 1])
 
-        # Novas posições
+        # Calcula as novas posições
         nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
         nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
 
-        # Verificando se a nova posição horizontal está dentro dos limites
+        # Verifica se a nova posição está dentro dos limites da tela
         if 0 <= nova_pos_x <= self.largura - self.tamanho:
             self.rect.x = nova_pos_x
         else:
             self.direcao_horizontal *= -1 
-
-        # Verificando se a nova posição vertical está dentro dos limites, respeitando o limite superior
         if self.limite_superior <= nova_pos_y <= self.altura - self.tamanho:
             self.rect.y = nova_pos_y
         else:
-            self.direcao_vertical *= -1
+            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
+            if nova_pos_y < self.limite_superior:  # Atingiu o topo
+                self.direcao_vertical = 1  # Vai para baixo
+            elif nova_pos_y > self.altura - self.tamanho:  # Atingiu o fundo
+                self.direcao_vertical = -1  # Vai para cima
+            else:
+                self.direcao_vertical *= -1 
 
 class Inimigo4(Inimigo):
     def __init__(self, path_image, x, largura, altura, tamanho):
         super().__init__(path_image, x, largura, altura, tamanho)
-        self.velocidade_horizontal = 4
+        
+        self.velocidade_horizontal = 2
         self.velocidade_vertical = 3
         self.direcao_horizontal = random.choice([-1, 1])  
         self.direcao_vertical = random.choice([-1, 1]) 
-        self.mudei_direcao_em = pygame.time.get_ticks()  # Guarda o momento em que a direção foi escolhida
-        self.tempo_troca_direcao = random.randint(1, 3) * 1000
         
+        self.mudei_direcao_em = pygame.time.get_ticks()
+        self.tempo_troca_direcao = random.randint(2, 5) * 1000
+
     def update(self):
-        # Verifica se o tempo de troca de direção passou
+        # Verifica se o tempo para troca de direção já passou
         if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks() 
-            self.tempo_troca_direcao = random.randint(1, 3) * 1000 
+            self.mudei_direcao_em = pygame.time.get_ticks()
+            self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-            # Escolhe uma nova direção aleatória
-            self.direcao_horizontal = random.choice([-1, 1])  # -1 = esquerda, 1 = direita
-            self.direcao_vertical = random.choice([-1, 1])    # -1 = cima, 1 = baixo
+            # Escolhe novas direções aleatórias
+            self.direcao_horizontal = random.choice([-1, 1])
+            self.direcao_vertical = random.choice([-1, 1])
 
-        # Novas posições
+        # Calcula as novas posições
         nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
         nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
 
-        # Verificando se a nova posição horizontal está dentro dos limites
+        # Verifica se a nova posição está dentro dos limites da tela
         if 0 <= nova_pos_x <= self.largura - self.tamanho:
             self.rect.x = nova_pos_x
         else:
             self.direcao_horizontal *= -1 
-
-        # Verificando se a nova posição vertical está dentro dos limites, respeitando o limite superior
         if self.limite_superior <= nova_pos_y <= self.altura - self.tamanho:
             self.rect.y = nova_pos_y
         else:
-            self.direcao_vertical *= -1
+            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
+            if nova_pos_y < self.limite_superior:  # Atingiu o topo
+                self.direcao_vertical = 1  # Vai para baixo
+            elif nova_pos_y > self.altura - self.tamanho:  # Atingiu o fundo
+                self.direcao_vertical = -1  # Vai para cima
+            else:
+                self.direcao_vertical *= -1 
 
 class Gerenciador:
     def __init__(self) -> None:
@@ -229,6 +254,7 @@ class Gerenciador:
         self.largura = 800
         self.altura = 600
         self.tamanho = 70
+        self.limite_superior = 50 
         self.tela = pygame.display.set_mode((self.largura, self.altura))
         pygame.display.set_caption("Batalhas Matemáticas")
 
@@ -273,42 +299,57 @@ class Gerenciador:
         for i, inimigo1 in enumerate(self.inimigos):
             for inimigo2 in self.inimigos[i + 1:]:
                 if inimigo1.rect.colliderect(inimigo2.rect):
+                    # Movimenta inimigos para longe um do outro
                     inimigo1.rect.x -= 5
+                    inimigo1.rect.y -= 2  
                     inimigo2.rect.x += 5
+                    inimigo2.rect.y += 2
+                    
                     inimigo1.velocidade_horizontal *= -1
                     inimigo2.velocidade_horizontal *= -1
 
-                    # Limita os inimigos aos limites da tela após a colisão
+                    # Limita os inimigos aos limites da tela
                     inimigo1.rect.x = max(0, min(self.largura - self.tamanho, inimigo1.rect.x))
                     inimigo1.rect.y = max(0, min(self.altura - self.tamanho, inimigo1.rect.y))
                     inimigo2.rect.x = max(0, min(self.largura - self.tamanho, inimigo2.rect.x))
                     inimigo2.rect.y = max(0, min(self.altura - self.tamanho, inimigo2.rect.y))
 
     def verificar_colisoes_entre_veiculos_e_inimigos(self):
+        tempo_atual = pygame.time.get_ticks()
         for inimigo in self.inimigos:
             for veiculo in self.veiculos:
                 veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho, veiculo.tamanho)
                 if inimigo.rect.colliderect(veiculo_rect):
-                    veiculo.integridade -= 1
-                    inimigo.velocidade_horizontal *= -1
-                    inimigo.velocidade_vertical *= -1
+                    if tempo_atual - inimigo.ultimo_tempo_colisao > 10:
+                        veiculo.integridade -= 1
+                        inimigo.ultimo_tempo_colisao = tempo_atual  # Atualiza o tempo da última colisão
 
-                    #Ajusta a posição do veículo e limita ele aos limites da tela considerando o espaço do texto
-                    if veiculo.x < inimigo.rect.x:
-                        veiculo.x = max(0, veiculo.x - 5)
-                    elif veiculo.x > inimigo.rect.x:
-                        veiculo.x = min(self.largura - veiculo.tamanho, veiculo.x + 5)
+                        # Ajusta a posição do inimigo para longe do veiculo
+                        if inimigo.rect.x < veiculo.x:
+                            inimigo.rect.x -= 10  # Move para a esquerda
+                            veiculo.x = min(self.largura - veiculo.tamanho, veiculo.x + 5)
+                        elif inimigo.rect.x > veiculo.x:
+                            inimigo.rect.x += 10  # Move para a direita
+                            veiculo.x = max(0, veiculo.x - 5)
 
-                    if veiculo.y < inimigo.rect.y:
-                        veiculo.y = max(50, veiculo.y - 5) 
-                    elif veiculo.y > inimigo.rect.y:
-                        veiculo.y = min(self.altura - veiculo.tamanho, veiculo.y + 5)
+                        if inimigo.rect.y < veiculo.y:
+                            inimigo.rect.y -= 10  # Move para cima
+                            veiculo.y = min(self.altura - veiculo.tamanho, veiculo.y + 5)
+                        elif inimigo.rect.y > veiculo.y:
+                            inimigo.rect.y += 10  # Move para baixo
+                            veiculo.y = max(50, veiculo.y - 5)
 
-                    # Limita o inimigo dentro dos limites da tela após a colisão
-                    inimigo.rect.x = max(0, min(self.largura - self.tamanho, inimigo.rect.x))
-                    inimigo.rect.y = max(0, min(self.altura - self.tamanho, inimigo.rect.y))
+                        # Inverte a direção
+                        inimigo.velocidade_horizontal *= -1
+                        inimigo.velocidade_vertical *= -1
 
-    def verificar_colisoes_entre_veiculoa(self):
+                        # Limita o inimigo aos limites da tela
+                        inimigo.rect.x = max(0, min(self.largura - inimigo.tamanho, inimigo.rect.x))
+                        inimigo.rect.y = max(self.limite_superior, min(self.altura - inimigo.tamanho, inimigo.rect.y))
+                        veiculo.x = max(0, min(self.largura - veiculo.tamanho, veiculo.x))
+                        veiculo.y = max(self.limite_superior, min(self.altura - veiculo.tamanho, veiculo.y))
+
+    def verificar_colisoes_entre_veiculoS(self):
         if pygame.Rect(self.v1.x, self.v1.y, self.v1.tamanho, self.v1.tamanho).colliderect(
                 pygame.Rect(self.v2.x, self.v2.y, self.v2.tamanho, self.v2.tamanho)):
             self.v1.integridade -= 1 
@@ -328,7 +369,7 @@ class Gerenciador:
                 self.v2.y = max(50, self.v2.y - 5)
 
     def run(self):
-        # Inicializa o jogo e faz aparecer um inimigo por vez
+        # Inicializa o jogo e faz aprecer um inimigo por vez
         self.is_running = True
         inimigos = [1, 2, 3, 4]
         while self.is_running:
@@ -361,7 +402,7 @@ class Gerenciador:
 
         self.verificar_colisoes_entre_inimigos()
         self.verificar_colisoes_entre_veiculos_e_inimigos()
-        self.verificar_colisoes_entre_veiculoa()
+        self.verificar_colisoes_entre_veiculoS()
 
         # # Verifica se a integridade de algum veículo chegou a zero e fecha o programa
         # if self.v1.integridade <= 0 or self.v2.integridade <= 0:
@@ -377,7 +418,7 @@ class Gerenciador:
         
         # Exibe a integridade no topo
         self.v1.mostrar_integridade(self.tela, (20, 25))  # v1 no canto superior esquerdo
-        self.v2.mostrar_integridade(self.tela, (self.largura - 200, 25))  # v2 no canto superior direito
+        self.v2.mostrar_integridade(self.tela, (self.largura - 250, 25))  # v2 no canto superior direito
         
         pygame.display.flip()
 
