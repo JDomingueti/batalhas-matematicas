@@ -22,7 +22,7 @@ class GerenciadorTelas:
         self.pausado = False
         self.estado = 'inicio'
         self.relogio = pygame.time.Clock()
-    
+
     def run(self):
         pygame.mixer.Sound.play(self.musica, -1)
         tempo_press = pygame.time.get_ticks()
@@ -65,7 +65,7 @@ class GerenciadorTelas:
                 self.tela.atualizar()
                 self.atualizar_display()
                 self.tela.desenhar()
-            
+
             elif (self.estado == 'jogando'):
                 
                 eventos: List[pygame.event.Event] = pygame.event.get()
@@ -85,7 +85,9 @@ class GerenciadorTelas:
                         self.tela_pause.set_botoes = 0
                         self.tela_pause.pos_botao = 0
                         self.pausado = not self.pausado
-                
+
+                self.tela.movimento_players(teclas_pressionadas)
+
                 if not self.pausado:
                     self.tela.atualizar()
                     self.atualizar_display()
@@ -101,7 +103,7 @@ class GerenciadorTelas:
                     self.atualizar_display()
                     self.tela.desenhar()
                     self.tela_pause.desenhar()
-                
+
             self.relogio.tick(60)
         pygame.quit()
 
@@ -173,7 +175,7 @@ class GerenciadorTelas:
                     self.musica.set_volume(self.musica_volume)
             case _:
                 pass
-         
+
 if (__name__ == "__main__"):
     pygame.init()
     Jogo = GerenciadorTelas(800, 600, (0,0,0))

@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random #, json
 from typing import List
 from abc import ABC, abstractmethod
 from eventos import evento, eventos_oceano, eventos_deserto, eventos_espaco
@@ -26,6 +26,12 @@ class jogo(ABC):
         self.contador_eventos = pygame.time.get_ticks()
         self.separador_eventos = 2000
 
+        # self.player_1 = ...(...)
+        # self.player_2 = ...(...)
+        # self.inimigos = []
+        # with open("...", "r", encoding="utf-8") as config_file:
+        #   self.configuracoes = json.load(config_file)
+
     def atualizar(self):
         self.gerar_eventos()
         if len(self.eventos) > 0:
@@ -48,12 +54,39 @@ class jogo(ABC):
 
     # @abstractmethod
     def checar_colisoes(self):
-    # Colisão dos obstáculos com eventos
+    # Colisão dos tiros
+        # Com obstáculos
+        # ...
+        # Com eventos
+        # ...
+        # Com players
+        # ...
+        # Com inimigos
+        # ...
+    # Colisão dos obstáculos
         for bloco in self.obstaculos:
+            # Com eventos
             for evento in self.eventos:
                 colisao = evento.verificar_colisao(bloco, 10)
                 if colisao:
                     self.obstaculos.remove(bloco)
+            # Com players
+            # ...
+            # Com inimigos
+            # ...
+    # Colisão eventos
+        # Com players
+        # ...
+        # Com inimigos
+        # ...
+    # Colisão players
+        # Com inimigos
+        # ...
+    
+    def gerar_inimigos(self):
+        # Implementar geração de inimigos
+        # ...
+        pass
 
     def criar_obstaculos(self, vida, cor = (0, 0, 0), nome = None, alcance = 0):
         for num_linha, linha in enumerate(self.mapa):
@@ -69,6 +102,13 @@ class jogo(ABC):
                         bloco = obstaculo(esquerda, topo, self.largura_blocos, self.altura_blocos, vida, cor, nome)
                         self.obstaculos.add(bloco)
     
+    def movimento_players(self, eventos : pygame.key):
+        # Movimento player_1
+        # ...
+        # Movimento player_2
+        # ...
+        pass
+
     @abstractmethod
     def gerar_eventos(self):
         pass
