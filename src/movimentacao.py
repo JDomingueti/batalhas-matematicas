@@ -6,7 +6,7 @@ pygame.init()
 largura_tela = 800
 altura_tela = 600
 screen = pygame.display.set_mode((largura_tela, altura_tela))
-pygame.display.set_caption("Criando o segundo jogador")
+pygame.display.set_caption("Jogar")
 
 class Tiro:
     def __init__(self, x, y, angulo):
@@ -53,12 +53,10 @@ class Jogador:
             dy = self.velocidade
         
         novo_x = self.x + dx
-        if(0 <= novo_x and novo_x <= largura_tela - largura_imagem):
-            self.x = novo_x
+        if(0 <= novo_x and novo_x <= largura_tela - largura_imagem): self.x = novo_x
 
         novo_y = self.y + dy
-        if(50 <= novo_y and novo_y <= altura_tela - altura_imagem):
-            self.y = novo_y
+        if(50 <= novo_y and novo_y <= altura_tela - altura_imagem): self.y = novo_y
 
     def rotacionar(self):
         keys = pygame.key.get_pressed()
@@ -107,18 +105,7 @@ sprite_imagem_1 = pygame.transform.scale(sprite_imagem_1, (largura_imagem, altur
 sprite_imagem_2 = pygame.transform.scale(sprite_imagem_2, (largura_imagem, altura_imagem))
 
 # Controles para cada jogador
-
 controles_jogador_1 = {
-    'esquerda': pygame.K_a,
-    'direita': pygame.K_d,
-    'cima': pygame.K_w,
-    'baixo': pygame.K_s,
-    'rotacao_anti_horaria': pygame.K_c,
-    'rotacao_horaria': pygame.K_v,
-    'disparo': pygame.K_b
-}
-
-controles_jogador_2 = {
     'esquerda': pygame.K_LEFT,
     'direita': pygame.K_RIGHT,
     'cima': pygame.K_UP,
@@ -126,6 +113,16 @@ controles_jogador_2 = {
     'rotacao_anti_horaria': pygame.K_COMMA,
     'rotacao_horaria': pygame.K_PERIOD,
     'disparo': pygame.K_SEMICOLON
+}
+
+controles_jogador_2 = {
+    'esquerda': pygame.K_a,
+    'direita': pygame.K_d,
+    'cima': pygame.K_w,
+    'baixo': pygame.K_s,
+    'rotacao_anti_horaria': pygame.K_c,
+    'rotacao_horaria': pygame.K_v,
+    'disparo': pygame.K_b
 }
 
 # Iniciando os jogadores
