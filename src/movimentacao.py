@@ -123,8 +123,12 @@ controles_jogador_2 = {
 }
 
 # Iniciando os jogadores
-jogador_1 = Jogador(100, 100, largura_imagem, altura_imagem, sprite_imagem_1, controles_jogador_1, False)
-jogador_2 = Jogador(300, 300, largura_imagem, altura_imagem, sprite_imagem_2, controles_jogador_2, True)
+x1_inicial = 50
+y1_inicial = 50
+x2_inicial = 700
+y2_inicial = 500
+jogador_1 = Jogador(x1_inicial, y1_inicial, largura_imagem, altura_imagem, sprite_imagem_1, controles_jogador_1, False)
+jogador_2 = Jogador(x2_inicial, y2_inicial, largura_imagem, altura_imagem, sprite_imagem_2, controles_jogador_2, True)
 
 running = True
 while running:
