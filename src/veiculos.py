@@ -14,8 +14,8 @@ class Veiculo:
         self.altura_tela = altura_tela
         self.angulo = 0
         self.tiros = []
-        self.ultimo_disparo = 0  # Armazena o tempo do último disparo
-        self.intervalo_tiro = 2  # Intervalo entre tiros em segundos
+        self.ultimo_disparo = 0 
+        self.intervalo_tiro = 2 
         self.image = pygame.image.load(path_image)
         self.image = pygame.transform.scale(self.image, (self.tamanho_veiculo, self.tamanho_veiculo))
 
@@ -127,188 +127,93 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         self.image = pygame.transform.scale(self.image, (self.tamanho_veiculo, self.tamanho_veiculo))  
         self.rect = self.image.get_rect()  
         self.rect.x = x
-        self.rect.y = 50  # Inimigos começam abaixo da integridade
+        self.rect.y = 50
         self.largura_tela = largura_tela
         self.altura_tela = altura_tela
+        self.velocidade = 2
         self.velocidade_vertical = 2
         self.velocidade_horizontal = 3
-        self.limite_superior = 50
         self.ultimo_tempo_colisao = pygame.time.get_ticks()
+        self.angulo = 0
+        self.tiros = []
+        self.ultimo_disparo = 0
+        self.intervalo_tiro = 1000
+        self.limite_distancia = 200
+                
+    def perseguir_veiculo(self, veiculos):
+        veiculo_proximo = min(veiculos, key=lambda veiculo: pygame.Vector2(veiculo.x, veiculo.y).distance_to(self.rect.center))
+        direcao = pygame.Vector2(veiculo_proximo.x - self.rect.x, veiculo_proximo.y - self.rect.y)
+        distancia_ate_veiculo = direcao.length()
+
+        if distancia_ate_veiculo > self.limite_distancia:
+            movimento = direcao.normalize() * self.velocidade
+            self.rect.x += movimento.x
+            self.rect.y += movimento.y
+            self.angulo = -math.degrees(math.atan2(direcao.y, direcao.x))
+
+            self.rect.x = max(0, min(self.largura_tela - self.tamanho_veiculo, self.rect.x))
+            self.rect.y = max(0, min(self.altura_tela - self.tamanho_veiculo, self.rect.y))
+
+    def disparar(self, veiculos):
+        veiculo_proximo = min(veiculos, key=lambda veiculo: pygame.Vector2(veiculo.x, veiculo.y).distance_to(self.rect.center))
+        direcao_x = veiculo_proximo.x - self.rect.x
+        direcao_y = veiculo_proximo.y - self.rect.y
+        self.angulo = -math.degrees(math.atan2(direcao_y, direcao_x))
+
+        tempo_atual = pygame.time.get_ticks()
+        if tempo_atual - self.ultimo_disparo >= self.intervalo_tiro:
+            centro_x = self.rect.centerx
+            centro_y = self.rect.centery
+            novo_tiro = Tiro(centro_x, centro_y, self.angulo)
+            self.tiros.append(novo_tiro)
+            self.ultimo_disparo = tempo_atual
+
+    def draw(self, surface):
+        image_rotacionada = pygame.transform.rotate(self.image, self.angulo)
+        novo_retangulo = image_rotacionada.get_rect(topleft=(self.rect.x, self.rect.y))
+        surface.blit(image_rotacionada, novo_retangulo)
+        for tiro in self.tiros:
+            tiro.draw(surface)
+
+    def atualizar_tiros(self):
+        for tiro in self.tiros[:]:
+            tiro.mover()
+            if tiro.x < 0 or tiro.x > self.largura_tela or tiro.y < 0 or tiro.y > self.altura_tela:
+                self.tiros.remove(tiro)
 
     @abstractmethod
-    def update(self):
-        pass
-    
-    def draw(self, tela):
-        tela.blit(self.image, (self.rect.x, self.rect.y))
-        
-class Inimigo1(Inimigo):
+    def update(self, veiculos):
+        self.perseguir_veiculo(veiculos)
+        self.disparar(veiculos) 
+        self.atualizar_tiros()
+
+class Inimigo1(Inimigo):       
     def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
         super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
-        
-        self.velocidade_horizontal = 2
-        self.velocidade_vertical = 3
-        self.direcao_horizontal = random.choice([-1, 1])  
-        self.direcao_vertical = random.choice([-1, 1]) 
-        
-        self.mudei_direcao_em = pygame.time.get_ticks()
-        self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-    def update(self):
-        # Verifica se o tempo para troca de direção já passou
-        if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks()
-            self.tempo_troca_direcao = random.randint(2, 5) * 1000
+    def update(self, veiculos):
+        super().update(veiculos)
 
-            # Escolhe novas direções aleatórias
-            self.direcao_horizontal = random.choice([-1, 1])
-            self.direcao_vertical = random.choice([-1, 1])
-
-        # Calcula as novas posições
-        nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
-        nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
-
-        # Verifica se a nova posição está dentro dos limites da tela
-        if 0 <= nova_pos_x <= self.largura_tela - self.tamanho_veiculo:
-            self.rect.x = nova_pos_x
-        else:
-            self.direcao_horizontal *= -1 
-        if self.limite_superior <= nova_pos_y <= self.altura_tela - self.tamanho_veiculo:
-            self.rect.y = nova_pos_y
-        else:
-            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
-            if nova_pos_y < self.limite_superior:  # Atingiu o topo
-                self.direcao_vertical = 1  # Vai para baixo
-            elif nova_pos_y > self.altura_tela - self.tamanho_veiculo:  # Atingiu o fundo
-                self.direcao_vertical = -1  # Vai para cima
-            else:
-                self.direcao_vertical *= -1 
-
-class Inimigo2(Inimigo):
+class Inimigo2(Inimigo):       
     def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
         super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
-        
-        self.velocidade_horizontal = 2
-        self.velocidade_vertical = 3
-        self.direcao_horizontal = random.choice([-1, 1])  
-        self.direcao_vertical = random.choice([-1, 1]) 
-        
-        self.mudei_direcao_em = pygame.time.get_ticks()
-        self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-    def update(self):
-        # Verifica se o tempo para troca de direção já passou
-        if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks()
-            self.tempo_troca_direcao = random.randint(2, 5) * 1000
+    def update(self, veiculos):
+        super().update(veiculos)
 
-            # Escolhe novas direções aleatórias
-            self.direcao_horizontal = random.choice([-1, 1])
-            self.direcao_vertical = random.choice([-1, 1])
-
-        # Calcula as novas posições
-        nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
-        nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
-
-        # Verifica se a nova posição está dentro dos limites da tela
-        if 0 <= nova_pos_x <= self.largura_tela - self.tamanho_veiculo:
-            self.rect.x = nova_pos_x
-        else:
-            self.direcao_horizontal *= -1 
-        if self.limite_superior <= nova_pos_y <= self.altura_tela - self.tamanho_veiculo:
-            self.rect.y = nova_pos_y
-        else:
-            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
-            if nova_pos_y < self.limite_superior:  # Atingiu o topo
-                self.direcao_vertical = 1  # Vai para baixo
-            elif nova_pos_y > self.altura_tela - self.tamanho_veiculo:  # Atingiu o fundo
-                self.direcao_vertical = -1  # Vai para cima
-            else:
-                self.direcao_vertical *= -1 
-
-class Inimigo3(Inimigo):
+class Inimigo3(Inimigo):       
     def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
         super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
-        
-        self.velocidade_horizontal = 2
-        self.velocidade_vertical = 3
-        self.direcao_horizontal = random.choice([-1, 1])  
-        self.direcao_vertical = random.choice([-1, 1]) 
-        
-        self.mudei_direcao_em = pygame.time.get_ticks()
-        self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-    def update(self):
-        # Verifica se o tempo para troca de direção já passou
-        if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks()
-            self.tempo_troca_direcao = random.randint(2, 5) * 1000
+    def update(self, veiculos):
+        super().update(veiculos)
 
-            # Escolhe novas direções aleatórias
-            self.direcao_horizontal = random.choice([-1, 1])
-            self.direcao_vertical = random.choice([-1, 1])
-
-        # Calcula as novas posições
-        nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
-        nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
-
-        # Verifica se a nova posição está dentro dos limites da tela
-        if 0 <= nova_pos_x <= self.largura_tela - self.tamanho_veiculo:
-            self.rect.x = nova_pos_x
-        else:
-            self.direcao_horizontal *= -1 
-        if self.limite_superior <= nova_pos_y <= self.altura_tela - self.tamanho_veiculo:
-            self.rect.y = nova_pos_y
-        else:
-            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
-            if nova_pos_y < self.limite_superior:  # Atingiu o topo
-                self.direcao_vertical = 1  # Vai para baixo
-            elif nova_pos_y > self.altura_tela - self.tamanho_veiculo:  # Atingiu o fundo
-                self.direcao_vertical = -1  # Vai para cima
-            else:
-                self.direcao_vertical *= -1 
-
-class Inimigo4(Inimigo):
+class Inimigo4(Inimigo):       
     def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
         super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
-        
-        self.velocidade_horizontal = 2
-        self.velocidade_vertical = 3
-        self.direcao_horizontal = random.choice([-1, 1])  
-        self.direcao_vertical = random.choice([-1, 1]) 
-        
-        self.mudei_direcao_em = pygame.time.get_ticks()
-        self.tempo_troca_direcao = random.randint(2, 5) * 1000
 
-    def update(self):
-        # Verifica se o tempo para troca de direção já passou
-        if pygame.time.get_ticks() - self.mudei_direcao_em > self.tempo_troca_direcao:
-            self.mudei_direcao_em = pygame.time.get_ticks()
-            self.tempo_troca_direcao = random.randint(2, 5) * 1000
-
-            # Escolhe novas direções aleatórias
-            self.direcao_horizontal = random.choice([-1, 1])
-            self.direcao_vertical = random.choice([-1, 1])
-
-        # Calcula as novas posições
-        nova_pos_x = self.rect.x + self.direcao_horizontal * self.velocidade_horizontal
-        nova_pos_y = self.rect.y + self.direcao_vertical * self.velocidade_vertical
-
-        # Verifica se a nova posição está dentro dos limites da tela
-        if 0 <= nova_pos_x <= self.largura_tela - self.tamanho_veiculo:
-            self.rect.x = nova_pos_x
-        else:
-            self.direcao_horizontal *= -1 
-        if self.limite_superior <= nova_pos_y <= self.altura_tela - self.tamanho_veiculo:
-            self.rect.y = nova_pos_y
-        else:
-            # Se atingir o topo ou o fundo da tela, inverte a direção vertical, mas o inimigo não vai para baixo
-            if nova_pos_y < self.limite_superior:  # Atingiu o topo
-                self.direcao_vertical = 1  # Vai para baixo
-            elif nova_pos_y > self.altura_tela - self.tamanho_veiculo:  # Atingiu o fundo
-                self.direcao_vertical = -1  # Vai para cima
-            else:
-                self.direcao_vertical *= -1 
+    def update(self, veiculos):
+        super().update(veiculos)
 
 class Gerenciador:
     def __init__(self) -> None:
@@ -386,7 +291,7 @@ class Gerenciador:
                 if inimigo.rect.colliderect(veiculo_rect):
                     if tempo_atual - inimigo.ultimo_tempo_colisao > 10:
                         veiculo.integridade -= 1
-                        inimigo.ultimo_tempo_colisao = tempo_atual  # Atualiza o tempo da última colisão
+                        inimigo.ultimo_tempo_colisao = tempo_atual
 
                         # Ajusta a posição do inimigo para longe do veiculo
                         if inimigo.rect.x < veiculo.x:
@@ -401,7 +306,7 @@ class Gerenciador:
                             veiculo.y = min(self.altura_tela - veiculo.tamanho_veiculo, veiculo.y + 5)
                         elif inimigo.rect.y > veiculo.y:
                             inimigo.rect.y += 10  # Move para baixo
-                            veiculo.y = max(90, veiculo.y - 5)
+                            veiculo.y = max(self.limite_superior, veiculo.y - 5)
 
                         # Inverte a direção
                         inimigo.velocidade_horizontal *= -1
@@ -426,14 +331,13 @@ class Gerenciador:
                 self.v1.x = min(self.largura_tela - self.v1.tamanho_veiculo, self.v1.x + 5)
                 self.v2.x = max(0, self.v2.x - 5)
             if self.v1.y < self.v2.y:
-                self.v1.y = max(90, self.v1.y - 5)
+                self.v1.y = max(self.limite_superior, self.v1.y - 5)
                 self.v2.y = min(self.altura_tela - self.v2.tamanho_veiculo, self.v2.y + 5)
             else:
                 self.v1.y = min(self.altura_tela - self.v1.tamanho_veiculo, self.v1.y + 5)
-                self.v2.y = max(90, self.v2.y - 5)
+                self.v2.y = max(self.limite_superior, self.v2.y - 5)
 
     def run(self):
-
         # Inicializa o jogo e faz aprecer um inimigo por vez
         self.is_running = True
         inimigos = [1, 2, 3, 4]
@@ -449,12 +353,12 @@ class Gerenciador:
             if keys[pygame.K_SEMICOLON]:
                 self.v1.disparar()
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_z]:
+            if keys[pygame.K_c]:
                 self.v2.disparar()
 
-            self.v1.rotacionar(pygame.K_COMMA, pygame.K_PERIOD) 
+            self.v1.rotacionar(keys, is_v1=True)
+            self.v2.rotacionar(keys, is_v1=False)
             self.v1.atualizar_tiros()
-            self.v2.rotacionar(pygame.K_x, pygame.K_z)
             self.v2.atualizar_tiros()
 
             self.eventos()
@@ -476,7 +380,7 @@ class Gerenciador:
         self.v2.processar_movimento(keys, is_v1=False)
 
         for inimigo in self.inimigos:
-            inimigo.update()
+            inimigo.update(self.veiculos)
 
         self.verificar_colisoes_entre_inimigos()
         self.verificar_colisoes_entre_veiculos_e_inimigos()
