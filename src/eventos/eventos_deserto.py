@@ -66,7 +66,7 @@ class bola_de_feno(evento.evento):
 
         Imagem do aviso
     '''
-    def __init__(self, tela: pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
+    def __init__(self, tela: pygame.SurfaceType, volume_efeitos : float):
         '''
         Inicializa um objeto do tipo eventos_deserto.bola_de_feno
         '''
@@ -80,7 +80,7 @@ class bola_de_feno(evento.evento):
 
         self.bola_de_feno = pygame.image.load(self.caminho + "bola_de_feno/1.png")
         self.bola_de_feno = pygame.transform.scale(self.bola_de_feno, (self.tamanho, self.tamanho))
-        self.bola_de_feno_rect = self.imgs[0].get_rect()
+        self.bola_de_feno_rect = self.bola_de_feno.get_rect()
         self.bola_de_feno_rect.topleft = (self.x_inicio - self.tamanho//2, self.y_inicio - self.tamanho//2)
         self.vida = 80
         self.sprite_atual = 0
@@ -211,7 +211,10 @@ class nuvem_gafanhotos(evento.evento):
     ----------------
         - criar_gafanhoto()
     '''
-    def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
+    def __init__(self, tela: pygame.Surface, volume_efeitos : float):
+        '''
+        Inicializa um objeto do tipo eventos_deserto.nuvem_gafanhotos
+        '''
         super().__init__(tela, volume_efeitos)
         self.tamanho = 20
         self.vida = 10
@@ -255,7 +258,7 @@ class nuvem_gafanhotos(evento.evento):
         self.frame_atual += 1
 
     def desenhar(self):
-        self.aviso_direcao
+        self.aviso_direcao()
         for pos, gafanhoto in enumerate(self.gafanhotos_rects):
             self.tela.blit(self.gafanhotos_imgs[self.imgs[pos]], gafanhoto)
 
@@ -386,7 +389,10 @@ class verme_da_areia(evento.evento):
 
         Imagem do aviso
     '''
-    def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
+    def __init__(self, tela: pygame.Surface, volume_efeitos : float):
+        '''
+        Inicializa um objeto do tipo eventos_deserto.verme_da_areia
+        '''
         super().__init__(tela, volume_efeitos)
         self.x_inicio = random.randint(0, self.largura_tela//3)
         self.x_fim = self.largura_tela - self.x_inicio
