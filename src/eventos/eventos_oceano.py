@@ -101,7 +101,7 @@ class bando_aguas_vivas(evento.evento):
             img = pygame.image.load(self.caminho + f"agua_viva/{i}.png")
             img = pygame.transform.scale(img, (self.tamanho[0], self.tamanho[1]))
             self.imgs_agua_viva.append(img)
-        self.velocidade_x = random.randint(4,6)
+        self.velocidade_x = random.randint(4,6) * self.lado_inicio
         self.afastamento = self.altura_tela//7
         self.quantidade_spawn = random.randint(5,8)
         self.quantidade_spawnada = 0
@@ -519,7 +519,7 @@ class tubarao(evento.evento):
             img = pygame.image.load(self.caminho + f"tubarao/{i}.png")
             img = pygame.transform.scale(img, self.tamanho)
             if (self.lado_inicio == -1):
-                img = pygame.transform.flip(self.imgs_tubarao[i-1], 1, 0)
+                img = pygame.transform.flip(img, 1, 0)
             self.imgs_tubarao.append(img)
         self.vida = 400
         self.tubarao_rect = pygame.rect.Rect(self.x_inicio, self.y_inicio - self.tamanho[1]//2, self.tamanho[0], self.tamanho[1])
