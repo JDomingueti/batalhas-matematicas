@@ -9,7 +9,7 @@ as linhas de código dos botões utilizados na interface
 gráfica do jogo.
 '''
 
-class configuracoes:
+class padrao:
     '''
     Classe criada para ser tomada por herança, com métodos
     e atributos comuns a mais de um tipo de botão.
@@ -90,7 +90,7 @@ class configuracoes:
             self.frame_atual = (self.frame_atual + 1) % 4
         self.contador_frames += 1
 
-class Botao(configuracoes):
+class Botao(padrao):
     '''
     Botão de clique
     '''
@@ -153,7 +153,7 @@ class Botao(configuracoes):
                     self.direcao = 0.1
                 self.x_pos += self.direcao
 
-class Controle_desl(configuracoes):
+class Controle_desl(padrao):
     '''
     Controle deslizante
     '''

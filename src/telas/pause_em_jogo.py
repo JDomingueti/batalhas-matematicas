@@ -2,7 +2,100 @@ import pygame, botoes
 from . import padrao
 
 class tela(padrao.tela):
+    '''
+    Subclasse de `padrao.tela` que define o menu de pause dentro de um 
+    cenário de jogo
+    
+    Atributos adicionais
+    --------------------
+    fonte: pygame.font.SysFont
+
+        Fonte a ser utilizada na tela
+        
+    superficie_fundo: pygame.Surface
+    
+        Fundo a ser utilizado na tela
+        
+    nome: pygame.Surface
+    
+        Texto que indica o status do jogo
+        
+    nome_rect: pygame.Rect
+    
+        Retângulo onde será impresso o atributo `nome`
+        
+    callback_botoes: function
+    
+        Função para chamada de retorno quando um dos botões da tela for 
+        acionado
+        
+    volume_musica: float
+    
+        Valor que indica o volume da música que está sendo tocada
+        
+    volume_efeitos: float
+    
+        Valor que indica o volume dos efeitos dos botões
+        
+    resumir: botoes.Botao
+    
+        Botão utilizado na tela que muda o status pausado para `False`
+        Botão do set 0
+        
+    opcoes: botoes.Botao
+    
+        Botão utilizado na tela que leva para o menu de opções
+        Botão do set 0, alterna para o set 1.
+        
+    inicio: botoes.Botao
+    
+        Botão utilizado na tela que encerra a execução do pygame
+        Botão do set 0
+    
+    musica: botoes.Controle_desl
+
+        Controle deslizante utilizado para ajustar o volume da música do
+        jogo. Botão do set 1
+
+    
+    efeitos: botoes.Controle_desl
+
+        Controle deslizante utilizado para ajustar o volume dos efeitos do
+        jogo. Botão do set 1
+    
+    voltar: botoes.Botao
+
+        Botão utilizado para voltar ao set de botões principal do menu.
+        Botão do set 1, alterna para o set 0.
+            
+    botoes: List[botoes.padrao] 
+
+        Lista com os botões do set atual.
+    
+    set_botoes: int
+
+        Indica o set atual de botões sendo utilizados.
+        Set 0: [resumir, opcoes, inicio] 
+        Set 1: [voltar, musica, efeitos]
+    '''
     def __init__(self, largura, altura, cor, volume_musica, volume_efeitos, display, callback_botoes):
+        '''
+        Inicializa um objeto da subclasse pause_em_jogo.tela
+        
+        Parâmetros
+        ----------
+        volume_musica: float
+
+            Valor do volume da música sendo tocada
+
+        volume_efeitos: float
+
+            Valor do volume dos efeitos dos botões
+
+        callback_botões: function
+
+            Função de retorno dos botões da tela
+        '''
         super().__init__(largura, altura, cor, display)
         
         self.volume_musica = volume_musica
@@ -105,9 +198,17 @@ class tela(padrao.tela):
         self.checar_eventos(None)
 
     def pegar_vol_musica(self):
+        '''
+        Método utilizado para o botão de controle deslizante de ajuste
+        do volume da música.
+        '''
         return(self.musica.ler_posicao())
 
     def pegar_vol_efeitos(self):
+        '''
+        Método utilizado para o botão de controle deslizante de ajuste
+        do volume dos efeitos.
+        '''
         return (self.efeitos.ler_posicao())
 
     def atualizar_vol_efeitos(self, novo_volume):

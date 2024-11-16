@@ -2,7 +2,81 @@ import pygame, sys, botoes
 from . import padrao
 
 class tela(padrao.tela):
-    def __init__(self, largura, altura, cor, musica, efeitos, fundo, display, callback_botoes):
+    '''
+    Subclasse de `padrao.tela` que define o menu de opções fora dos
+    cenários
+    
+    Atributos adicionais
+    --------------------
+    fonte: pygame.font.SysFont
+
+        Fonte a ser utilizada na tela
+        
+    nome_fundo: str
+    
+        Nome do fundo a ser utlizado na tela
+        
+    fundo: pygame.Surface
+    
+        Fundo a ser utilizado na tela
+        
+    nome: pygame.Surface
+    
+        Texto que indica o nome do jogo
+        
+    nome_rect: pygame.Rect
+    
+        Retângulo onde será impresso o atributo `nome`
+        
+    callback_botoes: function
+    
+        Função para chamada de retorno quando um dos botões da tela for 
+        acionado
+        
+    volume_musica: float
+    
+        Valor que indica o volume da música que está sendo tocada
+        
+    volume_efeitos: float
+    
+        Valor que indica o volume dos efeitos dos botões
+        
+    voltar: botoes.Botao
+        
+        Botão utilizado para retornar ao menu de início
+
+    musica: botoes.Controle_desl
+
+        Controle deslizante utilizado para ajustar o volume da música
+        do jogo
+
+    efeitos: botoes.Controle_desl
+
+        Controle deslizante utilizado para ajustar o volume dos efeitos
+        do jogo
+    '''
+    def __init__(self, largura, altura, cor, volume_musica, volume_efeitos, fundo, display, callback_botoes):
+        '''
+        Inicializa um objeto da subclasse opcoes.tela
+        
+        Parâmetros
+        ----------
+        volume_musica: float
+
+            Valor do volume da música sendo tocada
+
+        volume_efeitos: float
+
+            Valor do volume dos efeitos dos botões
+
+        fundo: pygame.Surface
+
+            Imagem ou superfície a ser utilizada de fundo na tela
+
+        callback_botões: function
+
+            Função de retorno dos botões da tela
+        '''
         super().__init__(largura, altura, cor, display)
 
         self.nome_fundo = fundo
@@ -23,8 +97,8 @@ class tela(padrao.tela):
         tam_fonte = altura//15
         tam_barras = (self.largura//3, 10)
         
-        self.volume_musica = musica
-        self.volume_efeitos = efeitos
+        self.volume_musica = volume_musica
+        self.volume_efeitos = volume_efeitos
 
         self.voltar : botoes.Botao = botoes.Botao((x_botoes, 9 * y_botoes), "Voltar", "Terminal",
                         tam_fonte, "White", (255,242,0), self.volume_efeitos, True)
@@ -74,7 +148,15 @@ class tela(padrao.tela):
             self.atualizar_vol_efeitos(self.pegar_vol_efeitos())
 
     def pegar_vol_musica(self):
+        '''
+        Método utilizado para o botão de controle deslizante de ajuste
+        do volume da música.
+        '''
         return(self.musica.ler_posicao())
 
     def pegar_vol_efeitos(self):
+        '''
+        Método utilizado para o botão de controle deslizante de ajuste
+        do volume dos efeitos.
+        '''
         return (self.efeitos.ler_posicao())
