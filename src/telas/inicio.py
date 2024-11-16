@@ -82,7 +82,7 @@ class tela(padrao.tela):
         self.nome_fundo = fundo
         self.fundo = fundo
         if self.fundo != None:
-            self.caminho_fundo += fundo
+            self.caminho_fundo += self.fundo
             self.fundo = pygame.image.load(self.caminho_fundo)
             self.fundo = pygame.transform.scale(self.fundo, (largura, altura))
         self.nome = self.fonte.render("Batalhas Matemáticas", False, "White")

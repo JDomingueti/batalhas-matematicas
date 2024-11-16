@@ -54,6 +54,11 @@ class tela(padrao.tela):
 
         Controle deslizante utilizado para ajustar o volume dos efeitos
         do jogo
+
+    Métodos adicionais
+    ------------------
+        - pegar_vol_musica()
+        - pegar_vol_efeitos()
     '''
     def __init__(self, largura, altura, cor, volume_musica, volume_efeitos, fundo, display, callback_botoes):
         '''

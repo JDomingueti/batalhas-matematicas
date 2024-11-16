@@ -140,7 +140,7 @@ class jogo(ABC):
                     self.eventos.remove(evento)
                     self.contador_eventos = pygame.time.get_ticks()
         self.checar_colisoes()
-        pygame.display.flip()
+        # pygame.display.flip()
         self.frame_atual += 1
 
     def desenhar(self):

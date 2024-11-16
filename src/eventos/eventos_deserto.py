@@ -3,7 +3,73 @@ from . import evento
 from math import sin
 
 class bola_de_feno(evento.evento):
+    '''
+    Atributos adicionais
+    --------------------
+    tamanho: int
+
+        Tamanho do lado do quadrado do evento
+    
+    y_inicio: int
+
+        Posição y inicial do evento
+
+    x_inicio: int
+
+        Posição x inicial do evento
+
+    velocidade_y: float
+
+        Controla o movimento do retângulo do evento na direção y
+
+    velocidade_x: float
+
+        Controla o movimento do retângulo do evento na direção x
+
+    aux_y: float
+
+        Variável criada para auxílio no controle da rotação da imagem
+
+    bola_de_feno: pygame.SurfaceType
+
+        Sprite utilizado no evento
+
+    bole_de_feno_rect: pygame.Rect
+
+        Retângulo na qual o evento está inserido
+
+    vida: int
+
+        Vida do evento
+
+    sprite_atual: int
+
+        Controla o sprite que está sendo exibido    
+    
+    frames_por_sprite: int
+
+        Duração em frames de cada sprite 
+
+    frame_atual: int
+
+        Variável para controle de frames do evento
+
+    som: pygame.mixer.Sound
+
+        Som que o evento toca
+
+    rect_aviso: pygame.Rect
+
+        Retângulo na qual será gerado a imagem de aviso do evento
+
+    img_aviso: pygame.Surface
+
+        Imagem do aviso
+    '''
     def __init__(self, tela: pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
+        '''
+        Inicializa um objeto do tipo eventos_deserto.bola_de_feno
+        '''
         super().__init__(tela, volume_efeitos)
         self.tamanho = self.largura_tela//10
         self.y_inicio = random.randint(self.altura_tela//4, 3*self.altura_tela//4)
@@ -12,9 +78,6 @@ class bola_de_feno(evento.evento):
         self.velocidade_x = random.randint(4,7) * self.lado_inicio
         self.aux_y = 0
 
-        self.imgs = []
-        for i in range(1,5):
-            self.imgs.append(pygame.transform.scale(pygame.image.load(self.caminho + f"bola_de_feno/{i}.png"), (self.tamanho, self.tamanho)))
         self.bola_de_feno = pygame.image.load(self.caminho + "bola_de_feno/1.png")
         self.bola_de_feno = pygame.transform.scale(self.bola_de_feno, (self.tamanho, self.tamanho))
         self.bola_de_feno_rect = self.imgs[0].get_rect()
@@ -28,6 +91,7 @@ class bola_de_feno(evento.evento):
         posicao_aviso = (self.largura_tela - self.tamanho/2 if (self.lado_inicio == -1) else self.tamanho/2, self.y_inicio - tamanho_aviso[1]/2)
         self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
         self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "bola_de_feno/aviso.png"), tamanho_aviso)
+        
 
     def atualizar(self):
         super().atualizar()
@@ -69,6 +133,84 @@ class bola_de_feno(evento.evento):
         return [self.bola_de_feno_rect]
 
 class nuvem_gafanhotos(evento.evento):
+    '''
+    Atributos adicionais
+    --------------------
+    tamanho: int
+
+        Tamanho do lado de um quadrado do evento
+    
+    y_inicio: int
+
+        Posição y inicial do evento
+
+    x_inicio: int
+
+        Posição x inicial do evento
+        
+    velocidade_x: float
+
+        Controla o movimento do retângulo do evento na direção x
+
+    metade_y_tela: int
+
+        Indica em qual metade (em altura) da tela o evento ocorrerá
+        1 -> Metade superior
+        2 -> Metade inferior
+
+    quantidade_maxima: int
+
+        Indica o número de objetos (retângulos) o evento irá gerar
+        
+    quantidade_spawnada: int
+
+        Indica a quantidade de objetos que o evento já gerou
+
+    gafanhotos_imgs: List[pygame.SurfaceType]
+
+        Lista com os sprites dos objetos do evento
+
+    separador_gafanhotos: int
+
+        Valor que representa a quantidade de milisegundos entre a 
+        geração de cada objeto do evento
+
+    gafanhotos_rects: List[pygame.Rect]
+
+        Lista que contém os retângulos de todos os objetos do evento
+
+    vidas: List[int]
+
+        Lista que contém a vida de cada objeto do evento
+
+    imgs: List[pygame.Surface]
+
+        Lista que contém o sprite de cada retângulo do evento
+
+    frame_atual: int
+
+        Variável para controle de frames do evento
+    
+    frames_por_sprite: int
+
+        Duração em frames de cada sprite 
+
+    som: pygame.mixer.Sound
+
+        Som que o evento toca
+
+    rect_aviso: pygame.Rect
+
+        Retângulo na qual será gerado a imagem de aviso do evento
+
+    img_aviso: pygame.Surface
+
+        Imagem do aviso
+
+    Método adicional
+    ----------------
+        - criar_gafanhoto()
+    '''
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
         super().__init__(tela, volume_efeitos)
         self.tamanho = 20
@@ -118,6 +260,9 @@ class nuvem_gafanhotos(evento.evento):
             self.tela.blit(self.gafanhotos_imgs[self.imgs[pos]], gafanhoto)
 
     def criar_gafanhoto(self):
+        '''
+        Método utilizado para criar os objetos do evento (gafanhotos)
+        '''
         y_gafanhoto = self.y_inicio + random.randint(-self.altura_tela//4, self.altura_tela//4) - self.tamanho
         gafanhoto = pygame.rect.Rect(self.x_inicio, y_gafanhoto, self.tamanho, self.tamanho)
         self.gafanhotos_rects.append(gafanhoto)
@@ -156,6 +301,91 @@ class nuvem_gafanhotos(evento.evento):
         return self.gafanhotos_rects
 
 class verme_da_areia(evento.evento):
+    '''
+    Atributos adicionais
+    --------------------
+    tamanho: int
+
+        Tamanho do lado de um quadrado do evento
+    
+    x_inicio: int
+
+        Posição x inicial do evento
+
+    x_fim: int
+
+        Posição x final do evento
+
+    velocidade_y_inicial: float
+
+        Velocidade de movimento em y inicial do evento
+
+    gravidade: float
+
+        Valor com que a velocidade em y diminui
+        
+    velocidade_x: float
+
+        Controla o movimento do retângulo do evento na direção x
+
+    img_cabeca: pygame.Surface
+
+        Sprite do retângulo na posição 0 da lista de retângulos
+
+    img_corpo: pygame.Surface
+
+        Sprites dos retângulos que não são o inicial ou final na lista
+        de retângulos
+
+    img_rabo: pygame.Surface
+
+        Sprite do retângulo na última posição da lista de retângulos
+
+    vetor_eixo: pygame.Vetor2
+        
+        Vetor para controle de rotação dos sprites
+
+    tamanho_corpo: int
+
+        Indica o número de objetos (retângulos) o evento irá gerar
+        
+    partes_criadas: int
+
+        Indica a quantidade de objetos que o evento já gerou
+
+    vida: int
+
+        Indica a vida de cada objeto do evento
+        
+    verme_da_areia_rects: List[pygame.Rect]
+
+        Lista que contém os retângulos de todos os objetos do evento
+
+    verme_da_areia_vidas: List[int]
+
+        Lista que contém a vida de cada objeto do evento
+
+    velocidades_verme_da_areia: List[pygame.Vetor2]
+
+        Lista com as velocidades de cada retângulo do evento
+
+    separador_corpo: int
+
+        Valor que representa a quantidade de milisegundos entre a 
+        geração de cada retângulo do evento
+
+    som: pygame.mixer.Sound
+
+        Som que o evento toca
+
+    rect_aviso: pygame.Rect
+
+        Retângulo na qual será gerado a imagem de aviso do evento
+
+    img_aviso: pygame.Surface
+
+        Imagem do aviso
+    '''
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
         super().__init__(tela, volume_efeitos)
         self.x_inicio = random.randint(0, self.largura_tela//3)
@@ -167,7 +397,7 @@ class verme_da_areia(evento.evento):
             self.x_fim = temp
         self.velocidade_y_inicial = random.randint(10, 15)
         self.gravidade = 0.2
-        # Fórmula para achar o tempo em tela e calcular a velocidade em x
+        
         tempo_em_tela = (2*self.velocidade_y_inicial)/self.gravidade
         self.velocidade_x = (self.x_fim - self.x_inicio)/tempo_em_tela
 

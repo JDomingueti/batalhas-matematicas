@@ -112,9 +112,9 @@ class GerenciadorTelas:
         self.altura = self.altura_padrao
         self.cor = cor
         self.volume_efeitos = 0
-        self.musica = pygame.mixer.Sound("../assets/musica_menu.mp3")
-        self.musica.set_volume(0)
-        self.volume_musica = self.musica.get_volume()
+        self.musica = pygame.mixer.music.load("../assets/musica_menu.mp3")
+        pygame.mixer.music.set_volume(0)
+        self.volume_musica = pygame.mixer.music.get_volume()
         self.display = pygame.display.set_mode((self.largura, self.altura), pygame.RESIZABLE)
         self.tela = telas.inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
         self.tela_pause = telas.pause_em_jogo.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, self.display, self.interagir)
@@ -130,7 +130,7 @@ class GerenciadorTelas:
         `K_ESCAPE`, `QUIT`), atualizar as telas, define os frames
         por segundo e troca o estado da tela
         '''
-        pygame.mixer.Sound.play(self.musica, -1)
+        pygame.mixer.music.play(-1, 1500)
         tempo_press = pygame.time.get_ticks()
         while (self.rodando):
             if (self.estado in ['inicio', 'opcoes', 'selecao']):
@@ -184,9 +184,11 @@ class GerenciadorTelas:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
                         tempo_press = pygame.time.get_ticks()
                         if self.pausado:
-                            self.musica.set_volume(self.volume_musica)
+                            pygame.mixer.music.set_volume(self.volume_musica)
+                            pygame.mixer.unpause()
                         else:
-                            self.musica.set_volume(self.volume_musica/10)
+                            pygame.mixer.pause()
+                            pygame.mixer.music.set_volume(self.volume_musica/10)
                         self.tela_pause.botoes = self.tela_pause.botoes_principais
                         self.tela_pause.set_botoes = 0
                         self.tela_pause.pos_botao = 0
@@ -209,7 +211,7 @@ class GerenciadorTelas:
                     self.atualizar_display()
                     self.tela.desenhar()
                     self.tela_pause.desenhar()
-
+            pygame.display.flip()
             self.relogio.tick(60)
         pygame.quit()
 
@@ -303,12 +305,12 @@ class GerenciadorTelas:
                     self.volume_musica = self.tela.pegar_vol_musica()
                     self.tela.volume_musica = self.volume_musica
                     self.tela_pause.volume_musica = self.volume_musica
-                    self.musica.set_volume(self.volume_musica)
+                    pygame.mixer.music.set_volume(self.volume_musica)
                 else:
                     self.volume_musica = self.tela_pause.pegar_vol_musica()
                     self.tela.volume_musica = self.volume_musica
                     self.tela_pause.volume_musica = self.volume_musica
-                    self.musica.set_volume(self.volume_musica)
+                    pygame.mixer.music.set_volume(self.volume_musica)
             case _:
                 pass
 

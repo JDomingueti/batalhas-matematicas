@@ -77,6 +77,11 @@ class tela(padrao.tela):
         Indica o set atual de botões sendo utilizados.
         Set 0: [resumir, opcoes, inicio] 
         Set 1: [voltar, musica, efeitos]
+
+    Métodos adicionais
+    ------------------
+        - pegar_vol_musica()
+        - pegar_vol_efeitos()
     '''
     def __init__(self, largura, altura, cor, volume_musica, volume_efeitos, display, callback_botoes):
         '''
