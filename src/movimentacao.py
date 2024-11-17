@@ -6,7 +6,7 @@ pygame.init()
 largura_tela = 800
 altura_tela = 600
 screen = pygame.display.set_mode((largura_tela, altura_tela))
-pygame.display.set_caption("Criando o segundo jogador")
+pygame.display.set_caption("Jogar")
 
 class Tiro:
     def __init__(self, x, y, angulo):
@@ -52,8 +52,11 @@ class Jogador:
         if keys[self.teclas['baixo']]:
             dy = self.velocidade
         
-        self.x += dx
-        self.y += dy
+        novo_x = self.x + dx
+        if(0 <= novo_x and novo_x <= largura_tela - largura_imagem): self.x = novo_x
+
+        novo_y = self.y + dy
+        if(50 <= novo_y and novo_y <= altura_tela - altura_imagem): self.y = novo_y
 
     def rotacionar(self):
         keys = pygame.key.get_pressed()
@@ -123,8 +126,12 @@ controles_jogador_2 = {
 }
 
 # Iniciando os jogadores
-jogador_1 = Jogador(100, 100, largura_imagem, altura_imagem, sprite_imagem_1, controles_jogador_1, False)
-jogador_2 = Jogador(300, 300, largura_imagem, altura_imagem, sprite_imagem_2, controles_jogador_2, True)
+x1_inicial = 50
+y1_inicial = 50
+x2_inicial = 700
+y2_inicial = 500
+jogador_1 = Jogador(x1_inicial, y1_inicial, largura_imagem, altura_imagem, sprite_imagem_1, controles_jogador_1, False)
+jogador_2 = Jogador(x2_inicial, y2_inicial, largura_imagem, altura_imagem, sprite_imagem_2, controles_jogador_2, True)
 
 running = True
 while running:

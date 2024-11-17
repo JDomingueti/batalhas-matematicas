@@ -118,14 +118,6 @@ class jogo(ABC):
         self.volume_efeitos = volume_efeitos
         self.eventos : List[evento.evento]= []
         self.frame_atual = 0
-        self.contador_eventos = pygame.time.get_ticks()
-        self.separador_eventos = 2000
-
-        # self.player_1 = ...(...)
-        # self.player_2 = ...(...)
-        # self.inimigos = []
-        # with open("...", "r", encoding="utf-8") as config_file:
-        #   self.configuracoes = json.load(config_file)
 
     def atualizar(self):
         '''
