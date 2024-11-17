@@ -73,6 +73,7 @@ class Jogador:
         novo_y = self.y + dy
         if(espaço_do_placar <= novo_y and novo_y <= altura_tela - altura_imagem): self.y = novo_y
 
+
     def rotacionar(self):
         keys = pygame.key.get_pressed()
 
@@ -154,6 +155,7 @@ controles_jogador_2 = {
 # Iniciando os jogadores
 x1_inicial = 50
 y1_inicial = espaço_do_placar
+
 x2_inicial = 700
 y2_inicial = 500
 jogador_1 = Jogador(x1_inicial, y1_inicial, largura_imagem, altura_imagem, sprite_imagem_1, controles_jogador_1, False)
@@ -197,6 +199,3 @@ while running:
     if running: running = jogador_2.esta_vivo()
     
     pygame.display.flip()
-
-    
-pygame.quit()
