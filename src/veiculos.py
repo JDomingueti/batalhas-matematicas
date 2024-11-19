@@ -12,10 +12,13 @@ class Veiculo:
         self.integridade = 100
         self.largura_tela = largura_tela
         self.altura_tela = altura_tela
+        self.velocidade = 2
         self.angulo = 0
         self.tiros = []
+        self.dano = 1
         self.ultimo_disparo = 0 
-        self.intervalo_tiro = 2 
+        self.intervalo_tiro = 2
+        self.velocidade_tiro = 3
         self.image = pygame.image.load(path_image)
         self.image = pygame.transform.scale(self.image, (self.tamanho_veiculo, self.tamanho_veiculo))
 
@@ -23,16 +26,16 @@ class Veiculo:
         limite_superior = 50  # Espaço do texto
         if is_v1:  # Para o veículo "v1" (esquerda)
             if keys[pygame.K_w] and self.y > limite_superior:  # Cima
-                self.y -= 5
+                self.y -= self.velocidade
                 self.integridade -= 0.1
             if keys[pygame.K_s] and self.y < self.altura_tela - self.tamanho_veiculo:  # Baixo
-                self.y += 5
+                self.y += self.velocidade
                 self.integridade -= 0.1
             if keys[pygame.K_a] and self.x > 0:  # Esquerda
-                self.x -= 5
+                self.x -= self.velocidade
                 self.integridade -= 0.1
             if keys[pygame.K_d] and self.x < self.largura_tela - self.tamanho_veiculo:  # Direita
-                self.x += 5
+                self.x += self.velocidade
                 self.integridade -= 0.1
                 
         else:  # Para o veículo "v2" (direita)
@@ -73,7 +76,7 @@ class Veiculo:
             # Calcula o centro do jogador para a origem do tiro
             centro_x = self.x
             centro_y = self.y
-            novo_tiro = Tiro(centro_x, centro_y, self.angulo)
+            novo_tiro = Tiro(centro_x, centro_y, self.angulo, self.velocidade_tiro)
             self.tiros.append(novo_tiro)
             self.ultimo_disparo = tempo_atual  # Atualiza o tempo do último disparo
 
@@ -104,10 +107,10 @@ class Veiculo:
         tela.blit(texto, posicao_texto)
 
 class Tiro:
-    def __init__(self, x, y, angulo):
+    def __init__(self, x, y, angulo, vel):
         self.x = x
         self.y = y
-        self.velocidade = 3
+        self.velocidade = vel
         self.angulo = angulo
         self.raio = 5
     
@@ -119,8 +122,36 @@ class Tiro:
     def draw(self, tela):
         pygame.draw.circle(tela, (255, 255, 0), (int(self.x), int(self.y)), self.raio)
 
+class PowerUp:
+    def __init__(self, path_image, x, y, efeito, tamanho_veiculo):
+        self.x = x
+        self.y = y
+        self.tamanho_veiculo = tamanho_veiculo
+        self.image = pygame.image.load(path_image)
+        self.image = pygame.transform.scale(self.image, (self.tamanho_veiculo, self.tamanho_veiculo))
+        self.rect = pygame.Rect(self.x, self.y, self.tamanho_veiculo, self.tamanho_veiculo)
+        self.tempo_vida = 5000  # dura 5 segundos
+        self.criado_em = pygame.time.get_ticks()
+        self.efeito = efeito
+
+    def aplicar_efeito(self, veiculo):
+        if self.efeito == "velocidade":
+            veiculo.velocidade += 2
+        elif self.efeito == "vida":
+            veiculo.integridade = min(100, veiculo.integridade + 20)
+        elif self.efeito == "tiro":
+            veiculo.velocidade_tiro += 0.5
+        elif self.efeito == "dano":
+            veiculo.dano += 1
+
+    def draw(self, surface):
+        surface.blit(self.image, (self.x, self.y))
+
+    def expirado(self):
+        return pygame.time.get_ticks() - self.criado_em > self.tempo_vida
+
 class Inimigo(pygame.sprite.Sprite, ABC):
-    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
+    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_image, powerup_efeito):
         super().__init__() 
         self.tamanho_veiculo = tamanho_veiculo
         self.image = pygame.image.load(path_image)
@@ -139,7 +170,10 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         self.ultimo_disparo = 0
         self.intervalo_tiro = 1000
         self.limite_distancia = 200
-                
+        self.integridade = 10
+        self.powerup_image = powerup_image
+        self.powerup_efeito = powerup_efeito
+           
     def perseguir_veiculo(self, veiculos):
         veiculo_proximo = min(veiculos, key=lambda veiculo: pygame.Vector2(veiculo.x, veiculo.y).distance_to(self.rect.center))
         direcao = pygame.Vector2(veiculo_proximo.x - self.rect.x, veiculo_proximo.y - self.rect.y)
@@ -164,7 +198,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         if tempo_atual - self.ultimo_disparo >= self.intervalo_tiro:
             centro_x = self.rect.centerx
             centro_y = self.rect.centery
-            novo_tiro = Tiro(centro_x, centro_y, self.angulo)
+            novo_tiro = Tiro(centro_x, centro_y, self.angulo, 3)
             self.tiros.append(novo_tiro)
             self.ultimo_disparo = tempo_atual
 
@@ -180,40 +214,51 @@ class Inimigo(pygame.sprite.Sprite, ABC):
             tiro.mover()
             if tiro.x < 0 or tiro.x > self.largura_tela or tiro.y < 0 or tiro.y > self.altura_tela:
                 self.tiros.remove(tiro)
+    
+    def colisao(self, tiro, veiculos, powerups):
+        if tiro != None:
+            if self.rect.colliderect(pygame.Rect(tiro.x - tiro.raio, tiro.y - tiro.raio, tiro.raio * 2, tiro.raio * 2)):
+                self.integridade -= veiculos.dano
+
+                if self.integridade <= 0:
+                    powerup = PowerUp(self.powerup_image, self.rect.x, self.rect.y, self.powerup_efeito, self.tamanho_veiculo)
+                    powerups.append(powerup)
+                return True  # Remove o inimigo da lista
+        return False
 
     @abstractmethod
-    def update(self, veiculos):
+    def update(self, tiros, veiculos, powerups):
         self.perseguir_veiculo(veiculos)
         self.disparar(veiculos) 
         self.atualizar_tiros()
 
 class Inimigo1(Inimigo):       
-    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
-        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
+    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito):
+        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito)
 
-    def update(self, veiculos):
-        super().update(veiculos)
+    def update(self, tiros, veiculos, powerups):  
+        return super().update(tiros, veiculos, powerups)
 
 class Inimigo2(Inimigo):       
-    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
-        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
+    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito):
+        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito)
 
-    def update(self, veiculos):
-        super().update(veiculos)
+    def update(self, tiros, veiculos, powerups):  
+        return super().update(tiros, veiculos, powerups)
 
 class Inimigo3(Inimigo):       
-    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
-        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
+    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito):
+        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito)
 
-    def update(self, veiculos):
-        super().update(veiculos)
+    def update(self, tiros, veiculos, powerups):  
+        return super().update(tiros, veiculos, powerups)
 
 class Inimigo4(Inimigo):       
-    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo):
-        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo)
+    def __init__(self, path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito):
+        super().__init__(path_image, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito)
 
-    def update(self, veiculos):
-        super().update(veiculos)
+    def update(self, tiros, veiculos, powerups):  
+        return super().update(tiros, veiculos, powerups)
 
 class Gerenciador:
     def __init__(self) -> None:
@@ -234,10 +279,17 @@ class Gerenciador:
         self.in2_img = "batalhas-matematicas/assets/inimigos/inimigo2_deserto.png"
         self.in3_img = "batalhas-matematicas/assets/inimigos/inimigo3_deserto.png"
         self.in4_img = "batalhas-matematicas/assets/inimigos/inimigo4_deserto.png"
+        
+        # Caminhos das imagens dos powerups
+        self.powerup1_img = "batalhas-matematicas/assets/poderes/vida.png"
+        self.powerup2_img = "batalhas-matematicas/assets/poderes/velocidade.png"
+        self.powerup3_img = "batalhas-matematicas/assets/poderes/bala.png"
+        self.powerup4_img = "batalhas-matematicas/assets/poderes/dano.png"
 
         self.inimigos : List[Inimigo] = []
         self.max_inimigos = 4
         self.timer_inimigos = pygame.time.get_ticks()
+        self.powerups = []
 
         # veiculos
         self.v1 = Veiculo(v1_img, 20, (self.altura_tela - self.tamanho_veiculo) // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo)  
@@ -253,16 +305,37 @@ class Gerenciador:
     def criar_inimigos(self, tipo, x, largura_tela, altura_tela, tamanho_veiculo):
         match tipo: 
             case 1:
-                inimigo = Inimigo1(self.in1_img, x, largura_tela, altura_tela, tamanho_veiculo)
+                inimigo = Inimigo1(self.in1_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup1_img, "vida")
             case 2: 
-                inimigo = Inimigo2(self.in2_img, x, largura_tela, altura_tela, tamanho_veiculo)
+                inimigo = Inimigo2(self.in2_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup2_img, "velocidade")
             case 3:
-                inimigo = Inimigo3(self.in3_img, x, largura_tela, altura_tela, tamanho_veiculo)
+                inimigo = Inimigo3(self.in3_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup3_img, "tiro")
             case 4:
-                inimigo = Inimigo4(self.in4_img, x, largura_tela, altura_tela, tamanho_veiculo)
+                inimigo = Inimigo4(self.in4_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup4_img, "dano")
             case _: 
                 return
         self.inimigos.append(inimigo)
+
+    def criar_powerups(self, tipo, x, largura_tela, altura_tela, tamanho_veiculo):
+        inimigo_powerups = {
+            1: (self.in1_img, self.powerup1_img, "vida"),
+            2: (self.in2_img, self.powerup2_img, "velocidade"),
+            3: (self.in3_img, self.powerup3_img, "tiro"),
+            4: (self.in4_img, self.powerup4_img, "dano"),
+        }
+
+        if tipo in inimigo_powerups:
+            inimigo_img, powerup_img, powerup_efeito = inimigo_powerups[tipo]
+            inimigo = Inimigo(inimigo_img, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito)
+            self.inimigos.append(inimigo)
+
+    def verificar_colisoes_powerups(self):
+        for powerup in self.powerups[:]:
+            for veiculo in self.veiculos:
+                veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho_veiculo, veiculo.tamanho_veiculo)
+                if powerup.rect.colliderect(veiculo_rect):
+                    powerup.aplicar_efeito(veiculo) 
+                    self.powerups.remove(powerup)
 
     def verificar_colisoes_entre_inimigos(self):
         for i, inimigo1 in enumerate(self.inimigos):
@@ -343,10 +416,14 @@ class Gerenciador:
         inimigos = [1, 2, 3, 4]
         while self.is_running:
             if len(self.inimigos) < self.max_inimigos and pygame.time.get_ticks() - self.timer_inimigos > 5000:
-                idx = random.choice(inimigos)
-                self.criar_inimigos(idx, self.largura_tela // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo)
-                inimigos.remove(idx)
-                self.timer_inimigos = pygame.time.get_ticks()
+                if inimigos:
+                    idx = random.choice(inimigos)
+                    self.criar_inimigos(idx, self.largura_tela // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo)
+                    inimigos.remove(idx)
+                    self.timer_inimigos = pygame.time.get_ticks()
+
+            if len(inimigos) == 0:
+                inimigos = [1, 2, 3, 4]
 
             # Checar a tecla de disparo
             keys = pygame.key.get_pressed()
@@ -362,8 +439,8 @@ class Gerenciador:
             self.v2.atualizar_tiros()
 
             self.eventos()
-            self.update()
             self.draw()
+            self.update()
             self.clock.tick(30)
 
         pygame.quit()
@@ -379,9 +456,25 @@ class Gerenciador:
         self.v1.processar_movimento(keys, is_v1=True)
         self.v2.processar_movimento(keys, is_v1=False)
 
-        for inimigo in self.inimigos:
-            inimigo.update(self.veiculos)
+        for inimigo in self.inimigos[:]:
+            if len(self.v1.tiros) > 0 or len(self.v2.tiros) > 0:
+                for tiro in self.v1.tiros:
+                    if inimigo.colisao(tiro, self.veiculos[0], self.powerups):
+                        self.v1.tiros.remove(tiro)
+                        if inimigo.integridade <= 0:
+                            self.inimigos.remove(inimigo)
+                            break
+                        pass
+                for tiro in self.v2.tiros:
+                    if inimigo.colisao(tiro, self.veiculos[1], self.powerups):
+                        self.v2.tiros.remove(tiro)
+                        if inimigo.integridade <= 0:
+                            self.inimigos.remove(inimigo)
+                            break
+                        pass
+            inimigo.update(None, self.veiculos, self.powerups)
 
+        self.verificar_colisoes_powerups()
         self.verificar_colisoes_entre_inimigos()
         self.verificar_colisoes_entre_veiculos_e_inimigos()
         self.verificar_colisoes_entre_veiculoS()
@@ -397,6 +490,9 @@ class Gerenciador:
         self.v2.draw(self.tela)
         for inimigo in self.inimigos:
             inimigo.draw(self.tela)
+        
+        for powerup in self.powerups:
+            powerup.draw(self.tela)
         
         # Exibe a integridade no topo
         self.v1.mostrar_integridade(self.tela, (20, 25))  # v1 no canto superior esquerdo
