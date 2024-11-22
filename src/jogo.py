@@ -117,6 +117,9 @@ class jogo(ABC):
         self.volume_musica = volume_musica
         self.volume_efeitos = volume_efeitos
         self.eventos : List[evento.evento]= []
+        self.obstaculos : List[obstaculo] = pygame.sprite.Group()
+        self.contador_eventos = 0
+        self.separador_eventos = 5000
         self.frame_atual = 0
 
     def atualizar(self):
@@ -132,7 +135,6 @@ class jogo(ABC):
                     self.eventos.remove(evento)
                     self.contador_eventos = pygame.time.get_ticks()
         self.checar_colisoes()
-        # pygame.display.flip()
         self.frame_atual += 1
 
     def desenhar(self):
@@ -164,9 +166,10 @@ class jogo(ABC):
         for bloco in self.obstaculos:
             # Com eventos
             for evento in self.eventos:
-                colisao = evento.verificar_colisao(bloco, 10)
-                if colisao:
-                    self.obstaculos.remove(bloco)
+                for rect in evento.pegar_rect():
+                    destruir = bloco.verificar_colisao(rect, 5)
+                    if destruir:
+                        self.obstaculos.remove(bloco)
             # Com players
             # ...
             # Com inimigos
@@ -328,7 +331,6 @@ class oceano(jogo):
         self.tamanho_mapa = (len(self.mapa[0]), len(self.mapa))
         self.largura_blocos = self.largura // self.tamanho_mapa[0]
         self.altura_blocos = self.altura // self.tamanho_mapa[1]
-        self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_oceano_{0}.png"
         self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
         self.chances = {
@@ -358,6 +360,7 @@ class oceano(jogo):
                 chance_bando_aguas_vivas = random.random()
                 if chance_bando_aguas_vivas <= self.chances['bando_aguas_vivas']:
                     self.eventos.append(eventos_oceano.bando_aguas_vivas(self.display, self.volume_efeitos))
+                self.contador_eventos = pygame.time.get_ticks()
 
 class deserto(jogo):
     '''
@@ -558,7 +561,7 @@ class obstaculo(pygame.sprite.Sprite):
 
         Valor que indica a vida do obstáculo
     '''
-    def __init__(self, x, y, largura, altura, vida, cor = (150,150,150), nome = None):
+    def __init__(self, x, y, largura, altura, vida, cor = (150,150,150), nome = None, transparente: bool = False):
         '''
         Método de inicialização dos obstáculos
 
@@ -592,18 +595,62 @@ class obstaculo(pygame.sprite.Sprite):
         nome: str | None
 
             Nome do arquivo a ser carregado para utilizar de sprite.
+
+        transparente: bool
+
+            Caso queira criar um obstáculo transparente, deve ser passado
+            esse parâmetro como true, sem passar o parâmetro `nome`
         '''
         super().__init__()
         if nome == None:
             self.image = pygame.Surface((largura, altura))
-            self.image.fill(cor)
+            if not transparente:
+                self.image.fill(cor)
             self.rect = self.image.get_rect(topleft = (x, y))
         else:
             self.image = pygame.image.load(nome)
             self.image = pygame.transform.scale(self.image, (largura, altura))
             self.rect = self.image.get_rect(topleft = (x, y))
         self.vida = vida
-        
+        self.dano = 5
+        self.contador_dano = 0
+        self.separador_dano = 500
+
+    def verificar_colisao(self, objeto : evento.evento | pygame.Rect, dano : int = 0):
+        if isinstance(objeto, evento.evento):
+            return objeto.verificar_colisao(self.rect, self.dano)
+        elif isinstance(objeto, pygame.Rect):
+            if self.rect.colliderect(objeto):
+                if objeto.top <= self.rect.bottom:
+                    if objeto.left > self.rect.right or objeto.right < self.rect.left:
+                        pass
+                    else:
+                        objeto.top = min(objeto.top, self.rect.bottom)
+                if objeto.bottom >= self.rect.top:
+                    if objeto.left > self.rect.right or objeto.right < self.rect.left:
+                        pass
+                    else:
+                        objeto.bottom = self.rect.top
+                if objeto.left <= self.rect.right:
+                    if objeto.top > self.rect.bottom or objeto.bottom < self.rect.top:
+                        pass
+                    else:
+                        objeto.left = self.rect.right
+                if objeto.right >= self.rect.left:
+                    if objeto.top > self.rect.bottom or objeto.bottom < self.rect.top:
+                        pass
+                    else:
+                        objeto.right = self.rect.left
+                if pygame.time.get_ticks() - self.contador_dano > self.separador_dano:
+                    self.vida -= dano
+                    self.contador_dano = pygame.time.get_ticks()
+                if self.vida <= 0:
+                    return True
+                return False
+        else:
+            # Objeto tem que possuir atributos rect e dano
+            return self.verificar_colisao(objeto.rect, objeto.dano)
+            
 mapa_oceano = [
     [" "," "," "," "," "," "," "," "," "," "," ","x","x","x","x","x","x","x"," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
     [" "," "," "," "," "," "," "," "," "," "," "," "," ","x","x","x","x"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],

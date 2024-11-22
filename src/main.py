@@ -1,4 +1,6 @@
 import pygame, sys, telas
+import jogo
+from telas import inicio, opcoes, pause_em_jogo, selecao
 from typing import List
 
 class GerenciadorTelas:
@@ -84,7 +86,6 @@ class GerenciadorTelas:
         - atualizar_display()
         - interagir(estado)
     '''
-    
     def __init__(self, largura, altura, cor):
         '''
         Função que inicializa o jogo
@@ -115,9 +116,10 @@ class GerenciadorTelas:
         pygame.mixer.music.set_volume(0)
         self.volume_musica = pygame.mixer.music.get_volume()
         self.display = pygame.display.set_mode((self.largura, self.altura), pygame.RESIZABLE)
-        self.tela = telas.inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
-        self.tela_pause = telas.pause_em_jogo.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, self.display, self.interagir)
+        self.tela = inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
+        self.tela_pause = pause_em_jogo.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, self.display, self.interagir)
         self.rodando = True
+        self.pausado = False
         self.estado = 'menu'
         self.relogio = pygame.time.Clock()
     
@@ -131,11 +133,11 @@ class GerenciadorTelas:
         pygame.mixer.music.play(-1, 1500)
         tempo_press = pygame.time.get_ticks()
         while (self.rodando):
-            if (self.estado == 'menu'):
+            if (self.estado != 'jogando'):
                 eventos: List[pygame.event.Event] = pygame.event.get()
                 for evento in eventos:
-                    res = self.display.checar_eventos(evento)
-                    self.interagir(res)
+                    self.tela.checar_eventos(evento)
+                    # self.interagir(res)
                     if (evento.type == pygame.QUIT):
                         pygame.quit()
                         sys.exit()
@@ -150,7 +152,7 @@ class GerenciadorTelas:
                         else:
                             tempo_press = pygame.time.get_ticks()
                             self.estado = 'inicio'
-                            self.tela = telas.inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
+                            self.tela = inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
                 if teclas_pressionadas[pygame.K_F11]:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
                         if pygame.display.is_fullscreen():
@@ -165,13 +167,12 @@ class GerenciadorTelas:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
                         if teclas_pressionadas[item]:
                             tempo_press = pygame.time.get_ticks()
-                            res = self.display.mover_no_teclado(item)
-                            self.interagir(res)
-                
-                self.display.atualizar()
-                self.display.draw()
+                            self.tela.mover_no_teclado(item)
+
+                self.tela.atualizar()
+                self.tela.desenhar()
             
-            elif (self.estado == 'jogando'):
+            else:
 
                 eventos: List[pygame.event.Event] = pygame.event.get()
                 for evento in eventos:
@@ -184,6 +185,8 @@ class GerenciadorTelas:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
                         tempo_press = pygame.time.get_ticks()
                         if self.pausado:
+                            if self.tela_pause.set_botoes == 1:
+                                self.tela_pause.botoes_opcoes[self.tela_pause.pos_botao].focado = False
                             pygame.mixer.music.set_volume(self.volume_musica)
                             pygame.mixer.unpause()
                         else:
@@ -257,15 +260,15 @@ class GerenciadorTelas:
         '''
         match acao:
             case 'selecao':
-                self.tela = telas.selecao.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, None, self.display, self.interagir)
+                self.tela = selecao.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, None, self.display, self.interagir)
                 pygame.display.set_caption("Seleção de mapas")
                 self.estado = 'selecao'
             case 'opcoes':
-                self.tela = telas.opcoes.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, None, self.display, self.interagir)
+                self.tela = opcoes.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, None, self.display, self.interagir)
                 pygame.display.set_caption("Opções")
                 self.estado = 'opcoes'
             case 'inicio':
-                self.tela = telas.inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
+                self.tela = inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
                 pygame.display.set_caption("Início")
                 self.estado = 'inicio'
             case 'oceano':
@@ -284,12 +287,22 @@ class GerenciadorTelas:
                 pygame.display.set_caption("Mapa espaço")
                 self.estado = "jogando"
             case 'opcoes':
-                self.display = telas.opcoes(self.largura, self.altura, self.cor, self.musica.get_volume(), self.volume_efeitos)
+                self.display = opcoes.tela(self.largura, self.altura, self.cor, pygame.mixer.music.get_volume(), self.volume_efeitos)
             case 'voltar':
-                self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
+                self.display = inicio.tela(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
             case 'efeitos':
-                self.display.volume_efeitos(self.display.atualizar_efeitos())
-                self.volume_efeitos = self.display.atualizar_efeitos()
+                if not self.pausado:
+                    self.volume_efeitos = self.tela.pegar_vol_efeitos()
+                    self.tela.volume_efeitos = self.volume_efeitos
+                    self.tela_pause.volume_efeitos = self.volume_efeitos
+                    self.tela.atualizar_vol_efeitos(self.volume_efeitos)
+                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
+                else:
+                    self.volume_efeitos = self.tela_pause.pegar_vol_efeitos()
+                    self.tela.volume_efeitos = self.volume_efeitos
+                    self.tela_pause.volume_efeitos = self.volume_efeitos
+                    self.tela.atualizar_vol_efeitos(self.volume_efeitos)
+                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
             case 'musica':
                 if not self.pausado:
                     self.volume_musica = self.tela.pegar_vol_musica()
@@ -301,6 +314,8 @@ class GerenciadorTelas:
                     self.tela.volume_musica = self.volume_musica
                     self.tela_pause.volume_musica = self.volume_musica
                     pygame.mixer.music.set_volume(self.volume_musica)
+            case 'resumir':
+                self.pausado = False
             case _:
                 pass
          
