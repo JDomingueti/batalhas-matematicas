@@ -2,11 +2,82 @@ import pygame, random
 from . import evento
 
 class cometa(evento.evento):
+<<<<<<< HEAD
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
+=======
+    '''
+    Atributos adicionais
+    --------------------
+    tamanho: tuple(int, int)
+
+        Tupla que indica o tamanho do retângulo do evento
+
+    x_inicio: int
+
+        Posição x inicial do evento
+
+    x_fim: int
+
+        Posição x final do evento
+
+    velocidade_y: float
+
+        Controla o movimento do retângulo do evento na direção y
+
+    velocidade_x: float
+
+        Controla o movimento do retângulo do evento na direção x
+
+    vida: int
+
+        Vida do evento
+
+    cometa_rect: pygame.Rect
+
+        Retângulo na qual o evento está inserido
+
+    cometa_imgs: List[pygame.SurfaceType]
+
+        Lista com os sprites do evento
+
+    sprite_atual: int
+
+        Controla o sprite que está sendo exibido    
+    
+    frames_por_sprite: int
+
+        Duração em frames de cada sprite 
+
+    frame_atual: int
+
+        Variável para controle de frames do evento
+
+    som: pygame.mixer.Sound
+
+        Som que o evento toca
+
+    angulo: float
+
+        Ângulo em que o evento será desenhado (em relação ao vetor (0,1))
+
+    img_aviso: pygame.Surface
+
+        Imagem do aviso gerado quando o evento é criado
+
+    rect_aviso: pygame.Rect
+
+        Retângulo na qual será gerado a imagem de aviso do evento
+    '''
+    def __init__(self, tela: pygame.Surface, volume_efeitos):
+        '''
+        Inicializa um objeto da classe eventos_espaco.cometa
+        '''
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(tela, volume_efeitos)
         self.tamanho = (self.largura_tela//6, self.largura_tela//4)
         self.x_inicio = random.randint(0, self.largura_tela//2) if self.lado_inicio == 1 else random.randint(self.largura_tela//2, self.largura_tela) 
         self.x_fim = random.randint(self.largura_tela//2, self.largura_tela) if self.lado_inicio == 1 else random.randint(0, self.largura_tela//2)
+<<<<<<< HEAD
         self.tempo_em_tela = random.randint(5,10)*10
         self.velocidade_y = self.altura_tela//self.tempo_em_tela
         self.velocidade_x = (self.x_fim - self.x_inicio)//self.tempo_em_tela
@@ -18,6 +89,21 @@ class cometa(evento.evento):
         self.frame_atual = 0
         self.sprite_atual = 0
         self.frames_por_sprite = 15
+=======
+        tempo_em_tela = random.randint(5,10)*10
+        self.velocidade_y = self.altura_tela//tempo_em_tela
+        self.velocidade_x = (self.x_fim - self.x_inicio)//tempo_em_tela
+        self.vida = 200
+        self.cometa_rect = pygame.rect.Rect(self.x_inicio, -2*self.tamanho[1], self.tamanho[0], self.tamanho[1])
+        self.cometa_imgs = []
+        for i in range(1,5):
+            img = pygame.image.load(self.caminho + f"cometa/{i}.png")
+            img = pygame.transform.scale(img, (self.tamanho[0], self.tamanho[1]))
+            self.cometa_imgs.append(img)
+        self.sprite_atual = 0
+        self.frames_por_sprite = 15
+        self.frame_atual = 0
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.angulo = 0
         self.som = pygame.mixer.Sound(self.caminho + "sons/fireball.mp3")
         self.angulo = pygame.Vector2(self.velocidade_x, self.velocidade_y).angle_to(pygame.Vector2(0, 1))
@@ -42,7 +128,11 @@ class cometa(evento.evento):
     def desenhar(self):
         self.aviso_direcao()
         centro = self.cometa_rect.center
+<<<<<<< HEAD
         img = pygame.transform.rotate(self.imgs[self.sprite_atual], self.angulo)
+=======
+        img = pygame.transform.rotate(self.cometa_imgs[self.sprite_atual], self.angulo)
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         rect = img.get_rect()
         rect.center = centro
         self.tela.blit(img, rect)
@@ -55,7 +145,12 @@ class cometa(evento.evento):
     def matar(self, callback):
         if self.cometa_rect.top > self.altura_tela or self.vida == 0:
             self.som.fadeout(1000)
+<<<<<<< HEAD
             callback(self.cometa_rect)
+=======
+            if self.vida == 0:
+                callback(self.cometa_rect)
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
             return True
         return False
 
@@ -63,7 +158,123 @@ class cometa(evento.evento):
         return [self.cometa_rect]
 
 class invasores_do_espaco(evento.evento):
+<<<<<<< HEAD
     def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
+=======
+    '''
+    Atributos adicionais
+    --------------------
+    tamanho: tuple(int, int)
+
+        Tupla que indica o tamanho do retângulo do evento
+
+    velocidade_y: float
+
+        Controla o movimento do retângulo do evento na direção y
+    
+    num_linhas: int
+
+        Indica o número de linhas de espaçonaves menores serão geradas
+    
+    num_colunas: int
+
+        Indica o número de colunas de espaçonaves menores serão geradas
+
+    x_inicio: int
+
+        Posição x inicial do evento
+        
+    tamanho_x: int
+
+        Comprimento em x dos inimigos menores
+
+    espacamento_x: int
+
+        Distância em x entre cada um dos inimigos menores
+
+    tamanho_y: int
+
+        Comprimento em y dos inimigos menores
+
+    espacamento_y: int
+
+        Distância em y entre cada um dos inimigos menores
+    
+    tamanho_nave: tuple(int, int)
+
+        Tupla com o tamanho da nave maior. Primeiro valor indica o 
+        comprimento em x e o segundo valor o comprimento em y
+    
+    matriz_inimigos: List[List[pygame.Rect]]
+
+        Matriz que contém o retângulo referente a cada inimigo menor
+
+    vida: int
+
+        Vida dos inimigos pequenos do evento
+
+    vidas_inimigos: List[List[int]]
+
+        Matriz que contém a vida de cada inimigo pequeno
+
+    img_linha_1: List[pygame.SurfaceType]
+
+        Lista com os sprites da linha 1 da matriz de inimigos pequenos
+
+    img_linha_2: List[pygame.SurfaceType]
+
+        Lista com os sprites da linha 2 da matriz de inimigos pequenos
+    
+    img_linha_3: List[pygame.SurfaceType]
+
+        Lista com os sprites das linhas maiores ou iguais a 3 da matriz
+        de inimigos pequenos
+    
+    img_nave_antiga: pygame.SurfaceType
+
+        Sprite da nave maior
+
+    vida_nave: int
+
+        Vida da nave maior
+
+    nave_antiga_rect: pygame.Rect
+
+        Retângulo da nave maior
+
+    sprite_atual: int
+
+        Controla o sprite que está sendo exibido    
+    
+    frames_por_sprite: int
+
+        Duração em frames de cada sprite 
+
+    frame_atual: int
+
+        Variável para controle de frames do evento
+
+    som: pygame.mixer.Sound
+
+        Som que o evento toca
+
+    img_aviso: pygame.Surface
+
+        Imagem do aviso gerado quando o evento é criado
+
+    rect_aviso: pygame.Rect
+
+        Retângulo na qual será gerado a imagem de aviso do evento
+
+    Método adicional
+    ----------------
+        - criar_inimigos()
+    '''
+    def __init__(self, tela: pygame.Surface, volume_efeitos : float):
+        '''
+        Inicializa um objeto da classe eventos_espaco.invasores_do_espaco
+        '''
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(tela, volume_efeitos)
         self.velocidade_y = 3
         self.num_linhas = 3
@@ -72,10 +283,17 @@ class invasores_do_espaco(evento.evento):
         self.tamanho_x = (self.largura_tela//3 - self.largura_tela//12)//self.num_colunas
         self.espacamento_x = (self.largura_tela//3 -self.num_colunas * self.tamanho_x)//(self.num_colunas + 1)
         self.tamanho_y = 2*self.tamanho_x // 3
+<<<<<<< HEAD
         self.tamanho_nave = (self.tamanho_x*2, self.tamanho_y)
         self.espacamento_y = self.tamanho_y // 3
         self.matriz_inimigos = [[],[],[]]
         self.vida_1 = 20
+=======
+        self.espacamento_y = self.tamanho_y // 3
+        self.tamanho_nave = (self.tamanho_x*2, self.tamanho_y)
+        self.matriz_inimigos = [[],[],[]]
+        self.vida = 20
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.vidas_inimigos = [[],[],[]]
         self.img_linha_1 = []
         self.img_linha_2 = []
@@ -89,14 +307,24 @@ class invasores_do_espaco(evento.evento):
         self.nave_antiga_rect = pygame.Rect
         self.criar_inimigos()
 
+<<<<<<< HEAD
         self.frames_por_sprite = 30
         self.sprite_atual = 0
+=======
+        self.sprite_atual = 0
+        self.frames_por_sprite = 30
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.frame_atual = 0
         self.som = pygame.mixer.Sound(self.caminho + "sons/space3.mp3")
         tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
         posicao_aviso = (self.largura_tela/2 - tamanho_aviso[0]/2, tamanho_aviso[1])
+<<<<<<< HEAD
         self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
         self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "space/aviso.png"), tamanho_aviso)
+=======
+        self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "space/aviso.png"), tamanho_aviso)
+        self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
 
     def criar_inimigos(self):
         for i in range(self.num_linhas):
@@ -105,7 +333,11 @@ class invasores_do_espaco(evento.evento):
                 pos_y =  - (i + 1) * self.espacamento_y - (i + 2) * self.tamanho_y
                 inimigo = pygame.rect.Rect(pos_x, pos_y, self.tamanho_x, self.tamanho_y)
                 self.matriz_inimigos[i].append(inimigo)
+<<<<<<< HEAD
                 self.vidas_inimigos[i].append(self.vida_1)
+=======
+                self.vidas_inimigos[i].append(self.vida)
+>>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pos_x = self.largura_tela//3 + (self.num_colunas + 1) * self.espacamento_x + (self.num_colunas + 1) * self.tamanho_x
         pos_y =  - (2 * self.num_linhas + 4) * self.espacamento_y - (self.num_linhas + 2) * self.tamanho_y
         if self.nave_antiga_rect != None:

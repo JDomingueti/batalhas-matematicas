@@ -1,3 +1,5 @@
+#movimentacao.py
+
 import pygame
 import math
 import time
@@ -31,7 +33,7 @@ class Tiro:
     
     def colisao(self, objeto):
         """Verifica colisão com outro objeto (Tiro ou Jogador)."""
-        if isinstance(objeto, Jogador):
+        if isinstance(objeto, Jogador) or isinstance(objeto, Inimigo):
             # Colisão do tiro com o jogador
             if objeto.x <= self.x <= objeto.x + objeto.largura \
                 and objeto.y <= self.y <= objeto.y + objeto.altura:
@@ -159,6 +161,7 @@ y2_inicial = 500
 jogador_1 = Jogador(x1_inicial, y1_inicial, largura_imagem, altura_imagem, sprite_imagem_1, controles_jogador_1, False)
 jogador_2 = Jogador(x2_inicial, y2_inicial, largura_imagem, altura_imagem, sprite_imagem_2, controles_jogador_2, True)
 
+efeitos_no_jogo = []
 class PowerUp:
     def __init__(self, path_image, x, y, efeito, tamanho_veiculo):
         self.x = x
@@ -178,20 +181,21 @@ class PowerUp:
                 if self.efeito == "velocidade":
                     objeto.velocidade += 2
                 elif self.efeito == "vida":
-                    objeto.integridade = min(100, objeto.integridade + 20)
+                    objeto.integridade = min(objeto.integridade + 20, 100)
                 elif self.efeito == "tiro":
                     objeto.velocidade_tiro += 0.5
                 elif self.efeito == "dano":
                     objeto.dano += 1
+                efeitos_no_jogo.remove(efeito)
 
-    def draw(self, surface):
+    def desenhar(self, surface):
         surface.blit(self.image, (self.x, self.y))
 
     def expirado(self):
         return pygame.time.get_ticks() - self.criado_em > self.tempo_vida
 
 class Inimigo:
-    def __init__(self, efeito, x, y, largura, altura, sprite, intervalo_tiro=1.0, integridade_inicial=100):
+    def __init__(self, efeito, x, y, largura, altura, sprite, intervalo_tiro=1.0, integridade_inicial=10):
         self.efeito = efeito
         self.x = x
         self.y = y
@@ -215,8 +219,8 @@ class Inimigo:
             dx /= distancia
             dy /= distancia
 
-        self.x += dx * self.velocidade
-        self.y += dy * self.velocidade
+            self.x += dx * self.velocidade
+            self.y += dy * self.velocidade
 
     def disparar(self, jogador):
         """Dispara um tiro na direção do jogador mais próximo."""
@@ -224,7 +228,7 @@ class Inimigo:
         if tempo_atual - self.ultimo_disparo >= self.intervalo_tiro:
             centro_x = self.x + self.largura / 2
             centro_y = self.y + self.altura / 2
-            angulo_tiro = math.degrees(math.atan2(jogador.y - self.y, jogador.x - self.x))
+            angulo_tiro = math.degrees(math.atan2(self.y - jogador.y, jogador.x - self.x))
 
             novo_tiro = Tiro(centro_x, centro_y, angulo_tiro)
             self.tiros.append(novo_tiro)
@@ -268,6 +272,7 @@ while running:
 
     running = jogador_1.esta_vivo()
     if running: running = jogador_2.esta_vivo()
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -322,17 +327,21 @@ while running:
             tiro.colisao(inimigo)
         for tiro in jogador_2.tiros[:]:
             tiro.colisao(inimigo)
-
-    efeitos = []
+        for tiro in inimigo.tiros[:]:
+            tiro.colisao(jogador_1)
+            tiro.colisao(jogador_2)
 
     if not inimigo.esta_vivo():
         efeito_path_imagem = '../assets/poderes/vida.png'
-        efeito = (efeito_path_imagem, inimigo.x, inimigo.y, inimigo.efeito, largura_imagem)
-        efeitos.append(efeito)
+        efeito = PowerUp(efeito_path_imagem, inimigo.x, inimigo.y, inimigo.efeito, largura_imagem)
+        efeitos_no_jogo.append(efeito)
 
-    for efeito in efeitos:
+    for efeito in efeitos_no_jogo:
+        efeito.desenhar(tela)
         efeito.colisao(jogador_1)
         efeito.colisao(jogador_2)
+        if efeito.expirado() and efeito in efeitos_no_jogo:
+            efeitos_no_jogo.remove(efeito)
 
     jogador_1.mostrar_integridade(20, 25)  # v1 no canto superior esquerdo
     jogador_2.mostrar_integridade(largura_tela - 250, 25)  # v2 no canto superior direito       
