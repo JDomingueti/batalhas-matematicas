@@ -75,8 +75,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         - atualizar_tiros()
         - colisao(tiro, veiculos, powerups)
         - update(tiros, veiculos, powerups)
-    '''
-        
+    '''      
     def __init__(self, path_image, x, largura_tela, altura_tela, tamanho, powerup_image, powerup_efeito):
         '''
         Inicializa a classe Inimigo.
