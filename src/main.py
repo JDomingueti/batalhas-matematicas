@@ -279,12 +279,18 @@ class GerenciadorTelas:
                 pygame.display.set_caption("Mapa espaço")
                 self.estado = "jogando"
             case 'opcoes':
-                self.display = opcoes.tela(self.largura, self.altura, self.cor, pygame.mixer.music.get_volume(), self.volume_efeitos)
+                self.tela = opcoes.tela(self.largura, self.altura, self.cor, pygame.mixer.music.get_volume(), self.volume_efeitos)
             case 'voltar':
-                self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
+                self.tela = inicio.tela(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
             case 'efeitos':
-                self.display.volume_efeitos(self.display.atualizar_efeitos())
-                self.volume_efeitos = self.display.atualizar_efeitos()
+                if not self.pausado:
+                    self.volume_efeitos = self.tela.pegar_vol_efeitos()
+                    self.tela.atualizar_vol_efeitos(self.volume_efeitos)
+                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
+                else:
+                    self.volume_efeitos = self.tela_pause.pegar_vol_efeitos()
+                    self.tela.volume_efeitos = self.volume_efeitos
+                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
             case 'musica':
                 if not self.pausado:
                     self.volume_musica = self.tela.pegar_vol_musica()

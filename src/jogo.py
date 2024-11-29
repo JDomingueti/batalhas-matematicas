@@ -131,7 +131,6 @@ class jogo(ABC):
         '''
         Método que atualiza as informações do jogo.
         '''
-        self.gerar_eventos()
         if len(self.eventos) > 0:
             for evento in self.eventos:
                 evento.aviso_direcao()
@@ -139,18 +138,8 @@ class jogo(ABC):
                 if evento.matar(self.explodir):
                     self.eventos.remove(evento)
                     self.contador_eventos = pygame.time.get_ticks()
-        self.checar_colisoes()
-        self.frame_atual += 1
-
-    def atualizar(self):
-        self.gerar_eventos()
-        if len(self.eventos) > 0:
-            for evento in self.eventos:
-                evento.aviso_direcao()
-                evento.atualizar()
-                if evento.matar(self.explodir):
-                    self.eventos.remove(evento)
-                    self.contador_eventos = pygame.time.get_ticks()
+        else:
+            self.gerar_eventos()
         self.checar_colisoes()
         pygame.display.flip()
         self.frame_atual += 1
@@ -184,10 +173,9 @@ class jogo(ABC):
         for bloco in self.obstaculos:
             # Com eventos
             for evento in self.eventos:
-                for rect in evento.pegar_rect():
-                    destruir = bloco.verificar_colisao(rect, 5)
-                    if destruir:
-                        self.obstaculos.remove(bloco)
+                destruir = bloco.verificar_colisao(evento, 5)
+                if destruir:
+                    self.obstaculos.remove(bloco)
             # Com players
             # ...
             # Com inimigos
