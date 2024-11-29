@@ -12,7 +12,7 @@ class Veiculo:
     Classe criada com as configurações gerais dos
     veículos que serão controlados pelos jogadores.
     '''
-    def __init__(self, caminho_imagem, x, y, largura_tela, altura_tela, tamanho_veiculo, teclas, tiro_inverso=False):
+    def __init__(self, caminho_imagem, x, y, largura_tela, altura_tela, tamanho, teclas, tiro_inverso=False):
         
         '''
         Método que carrega e ajusta as configurações iniciais 
@@ -36,7 +36,7 @@ class Veiculo:
         altura_tela: float
             altura da tela
 
-        tamanho_veículo: float
+        tamanho: float
             tamanho do veículo nos eixos x e y
 
         teclas: dict
@@ -79,7 +79,7 @@ class Veiculo:
         self.y = y
         self.largura_tela = largura_tela
         self.altura_tela = altura_tela
-        self.tamanho_veiculo = tamanho_veiculo
+        self.tamanho = tamanho
         self.teclas = teclas
         self.tiro_inverso = tiro_inverso
 
@@ -122,10 +122,10 @@ class Veiculo:
         
         #atualização da posição horizontal
         novo_x = self.x + dx
-        if(0 <= novo_x and novo_x <= self.largura_tela - self.tamanho_veiculo): self.x = novo_x
+        if(0 <= novo_x and novo_x <= self.largura_tela - self.tamanho): self.x = novo_x
         # atualização da posição vertical
         novo_y = self.y + dy
-        if(50 <= novo_y and novo_y <= self.altura_tela - self.tamanho_veiculo): self.y = novo_y
+        if(50 <= novo_y and novo_y <= self.altura_tela - self.tamanho): self.y = novo_y
 
     def rotacionar(self):
         '''
@@ -155,8 +155,8 @@ class Veiculo:
         '''
         tempo_atual = time.time()
         if tempo_atual - self.ultimo_disparo >= self.intervalo_tiro:
-            centro_x = self.x + self.tamanho_veiculo / 2
-            centro_y = self.y + self.tamanho_veiculo / 2
+            centro_x = self.x + self.tamanho / 2
+            centro_y = self.y + self.tamanho / 2
             angulo_tiro  = self.angulo
             if self.tiro_inverso:
                 angulo_tiro += 180
@@ -174,9 +174,9 @@ class Veiculo:
             Imagem da tela
         '''
         imagem = pygame.image.load(self.caminho_imagem) #carregando imagem
-        imagem = pygame.transform.scale(imagem, (self.tamanho_veiculo, self.tamanho_veiculo)) # mudando escala
+        imagem = pygame.transform.scale(imagem, (self.tamanho, self.tamanho)) # mudando escala
         imagem_rotacionada = pygame.transform.rotate(imagem, self.angulo) # rotacionando imagem
-        novo_retangulo = imagem_rotacionada.get_rect(center=(self.x + self.tamanho_veiculo / 2, self.y + self.tamanho_veiculo / 2))
+        novo_retangulo = imagem_rotacionada.get_rect(center=(self.x + self.tamanho / 2, self.y + self.tamanho / 2))
         surface.blit(imagem_rotacionada, novo_retangulo.topleft)
         
         # Desenha os tiros
