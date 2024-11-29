@@ -121,6 +121,11 @@ class jogo(ABC):
         self.contador_eventos = 0
         self.separador_eventos = 5000
         self.frame_atual = 0
+        # self.player_1 = ...(...)
+        # self.player_2 = ...(...)
+        # self.inimigos = []
+        # with open("...", "r", encoding="utf-8") as config_file:
+        #   self.configuracoes = json.load(config_file)
 
     def atualizar(self):
         '''
@@ -135,6 +140,19 @@ class jogo(ABC):
                     self.eventos.remove(evento)
                     self.contador_eventos = pygame.time.get_ticks()
         self.checar_colisoes()
+        self.frame_atual += 1
+
+    def atualizar(self):
+        self.gerar_eventos()
+        if len(self.eventos) > 0:
+            for evento in self.eventos:
+                evento.aviso_direcao()
+                evento.atualizar()
+                if evento.matar(self.explodir):
+                    self.eventos.remove(evento)
+                    self.contador_eventos = pygame.time.get_ticks()
+        self.checar_colisoes()
+        pygame.display.flip()
         self.frame_atual += 1
 
     def desenhar(self):
@@ -182,7 +200,7 @@ class jogo(ABC):
         # Colisão players
             # Com inimigos
             # ...
-    
+        
     def gerar_inimigos(self):
         '''
         Método destinado a geração de inimigos.
@@ -233,7 +251,7 @@ class jogo(ABC):
                     else:
                         bloco = obstaculo(esquerda, topo, self.largura_blocos, self.altura_blocos, vida, cor, nome)
                         self.obstaculos.add(bloco)
-    
+
     def movimento_players(self, evento : pygame.key):
         '''
         Método destinado a implementação do movimento dos jogadores
@@ -333,6 +351,7 @@ class oceano(jogo):
         self.altura_blocos = self.altura // self.tamanho_mapa[1]
         nome_obstaculo = "../assets/sprites/bloco_oceano_{0}.png"
         self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
+        self.fundo_atual = 1
         self.chances = {
             'tubarao': 0.3,
             'caranguejo': 0.3,
@@ -425,6 +444,7 @@ class deserto(jogo):
         self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_deserto_{0}.png"
         self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
+        self.fundo_atual = 1
         self.chances = {
             "bola_de_feno" : 0.4,
             "verme_da_areia" : 0.3,
@@ -515,6 +535,7 @@ class espaco(jogo):
         self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_espaco_{0}.png"
         self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
+        self.fundo_atual = 1
         self.chances = {
             "cometa" : 0.4,
             "space" : 0.3

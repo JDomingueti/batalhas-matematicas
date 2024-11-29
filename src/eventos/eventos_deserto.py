@@ -91,7 +91,6 @@ class bola_de_feno(evento.evento):
         posicao_aviso = (self.largura_tela - self.tamanho/2 if (self.lado_inicio == -1) else self.tamanho/2, self.y_inicio - tamanho_aviso[1]/2)
         self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
         self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "bola_de_feno/aviso.png"), tamanho_aviso)
-        
 
     def atualizar(self):
         super().atualizar()

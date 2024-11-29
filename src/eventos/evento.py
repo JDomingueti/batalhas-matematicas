@@ -1,6 +1,5 @@
 import pygame, random
 from abc import ABC, abstractmethod
-from math import sin
 
 ''' Arquivo para implementação dos eventos dos cenários '''
 
@@ -130,7 +129,6 @@ class evento(ABC):
         Método que retorna o(s) retângulo(s) do evento
         '''
         pass
-
 
 class explosao(evento):
     '''

@@ -120,9 +120,9 @@ class GerenciadorTelas:
         self.tela_pause = pause_em_jogo.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, self.display, self.interagir)
         self.rodando = True
         self.pausado = False
-        self.estado = 'menu'
+        self.estado = 'inicio'
         self.relogio = pygame.time.Clock()
-    
+
     def run(self):
         '''
         Esse método é responsável por, principalmente, redirecionar
@@ -162,6 +162,7 @@ class GerenciadorTelas:
                             self.display = pygame.display.set_mode(pygame.display.get_desktop_sizes()[0])
                             pygame.display.toggle_fullscreen()
                         tempo_press = pygame.time.get_ticks()
+
                 teclado = [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT,pygame.K_RETURN]
                 for item in teclado:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
@@ -177,21 +178,12 @@ class GerenciadorTelas:
                 eventos: List[pygame.event.Event] = pygame.event.get()
                 for evento in eventos:
                     if (evento.type == pygame.QUIT):
-                        pygame.quit()
-                        sys.exit()
+                        self.rodando = False
 
                 teclas_pressionadas = pygame.key.get_pressed()
                 if teclas_pressionadas[pygame.K_ESCAPE]:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
                         tempo_press = pygame.time.get_ticks()
-                        if self.pausado:
-                            if self.tela_pause.set_botoes == 1:
-                                self.tela_pause.botoes_opcoes[self.tela_pause.pos_botao].focado = False
-                            pygame.mixer.music.set_volume(self.volume_musica)
-                            pygame.mixer.unpause()
-                        else:
-                            pygame.mixer.pause()
-                            pygame.mixer.music.set_volume(self.volume_musica/10)
                         self.tela_pause.botoes = self.tela_pause.botoes_principais
                         self.tela_pause.set_botoes = 0
                         self.tela_pause.pos_botao = 0
@@ -289,20 +281,10 @@ class GerenciadorTelas:
             case 'opcoes':
                 self.display = opcoes.tela(self.largura, self.altura, self.cor, pygame.mixer.music.get_volume(), self.volume_efeitos)
             case 'voltar':
-                self.display = inicio.tela(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
+                self.display = telas.inicio(self.largura, self.altura, self.cor, self.volume_efeitos, "fundo_inicio.png")
             case 'efeitos':
-                if not self.pausado:
-                    self.volume_efeitos = self.tela.pegar_vol_efeitos()
-                    self.tela.volume_efeitos = self.volume_efeitos
-                    self.tela_pause.volume_efeitos = self.volume_efeitos
-                    self.tela.atualizar_vol_efeitos(self.volume_efeitos)
-                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
-                else:
-                    self.volume_efeitos = self.tela_pause.pegar_vol_efeitos()
-                    self.tela.volume_efeitos = self.volume_efeitos
-                    self.tela_pause.volume_efeitos = self.volume_efeitos
-                    self.tela.atualizar_vol_efeitos(self.volume_efeitos)
-                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
+                self.display.volume_efeitos(self.display.atualizar_efeitos())
+                self.volume_efeitos = self.display.atualizar_efeitos()
             case 'musica':
                 if not self.pausado:
                     self.volume_musica = self.tela.pegar_vol_musica()
@@ -314,11 +296,9 @@ class GerenciadorTelas:
                     self.tela.volume_musica = self.volume_musica
                     self.tela_pause.volume_musica = self.volume_musica
                     pygame.mixer.music.set_volume(self.volume_musica)
-            case 'resumir':
-                self.pausado = False
             case _:
                 pass
-         
+
 if (__name__ == "__main__"):
     '''
     Inicializa o jogo e executa caso o código seja executado 
