@@ -5,30 +5,30 @@ from veiculos import Veiculo
 from inimigos import *
 
 class Gerenciador:
-    def __init__(self) -> None:
+    def __init__(self, largura, altura, display) -> None:
         pygame.init()
 
         # Dimensões
-        self.largura_tela = 800
-        self.altura_tela = 600
-        self.tamanho = 70
+        self.largura_tela = largura
+        self.altura_tela = altura
+        self.tamanho_veiculo = 70
         self.limite_superior = 50
-        self.tela = pygame.display.set_mode((self.largura_tela, self.altura_tela))
+        self.tela = display
         pygame.display.set_caption("Batalhas Matemáticas")
 
         # Caminhos das imagens ! o.s.path.join colocar depois
-        v1_img = "batalhas-matematicas/assets/veiculos/foguete1.png"
-        v2_img = "batalhas-matematicas/assets/veiculos/foguete2.png"
-        self.in1_img = "batalhas-matematicas/assets/inimigos/inimigo1_deserto.png"
-        self.in2_img = "batalhas-matematicas/assets/inimigos/inimigo2_deserto.png"
-        self.in3_img = "batalhas-matematicas/assets/inimigos/inimigo3_deserto.png"
-        self.in4_img = "batalhas-matematicas/assets/inimigos/inimigo4_deserto.png"
+        v1_img = "../assets/veiculos/foguete1.png"
+        v2_img = "../assets/veiculos/foguete2.png"
+        self.in1_img = "../assets/inimigos/inimigo1_deserto.png"
+        self.in2_img = "../assets/inimigos/inimigo2_deserto.png"
+        self.in3_img = "../assets/inimigos/inimigo3_deserto.png"
+        self.in4_img = "../assets/inimigos/inimigo4_deserto.png"
         
         # Caminhos das imagens dos powerups
-        self.powerup1_img = "batalhas-matematicas/assets/poderes/vida.png"
-        self.powerup2_img = "batalhas-matematicas/assets/poderes/velocidade.png"
-        self.powerup3_img = "batalhas-matematicas/assets/poderes/bala.png"
-        self.powerup4_img = "batalhas-matematicas/assets/poderes/dano.png"
+        self.powerup1_img = "../assets/poderes/vida.png"
+        self.powerup2_img = "../assets/poderes/velocidade.png"
+        self.powerup3_img = "../assets/poderes/bala.png"
+        self.powerup4_img = "../assets/poderes/dano.png"
 
         self.inimigos : List[Inimigo] = []
         self.max_inimigos = 4
@@ -292,11 +292,10 @@ class Gerenciador:
 
         # Verifica se a integridade de algum veículo chegou a zero
         if self.v1.integridade <= 0 or self.v2.integridade <= 0:
-            print("Fim de Jogo!")
+            #print("Fim de Jogo!")
             self.is_running = False
 
     def draw(self):
-        self.tela.fill((255, 255, 255)) # Fundo branco
         self.v1.draw(self.tela)
         self.v2.draw(self.tela)
         for inimigo in self.inimigos:
@@ -311,8 +310,6 @@ class Gerenciador:
         self.v1.mostrar_integridade(self.tela, (20, 25))  # v1 no canto superior esquerdo
         self.v2.mostrar_integridade(self.tela, (self.largura_tela - 250, 25))  # v2 no canto superior direito
         
-        pygame.display.flip()
-
 if __name__ == '__main__':
     jogo = Gerenciador()
     jogo.run()

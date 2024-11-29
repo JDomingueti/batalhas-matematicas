@@ -118,6 +118,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         self.velocidade_horizontal = 3
         self.ultimo_tempo_colisao = pygame.time.get_ticks()
         self.angulo = 0
+        self.dano = 5
         self.tiros = []
         self.ultimo_disparo = 0
         self.intervalo_tiro = 5 # 5 segundos
@@ -166,7 +167,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         if tempo_atual - self.ultimo_disparo >= self.intervalo_tiro:
             centro_x = self.rect.centerx
             centro_y = self.rect.centery
-            novo_tiro = Tiro(centro_x, centro_y, self.angulo, 3, (255, 0, 0))
+            novo_tiro = Tiro(centro_x, centro_y, self.angulo, 3, (255, 0, 0), self.dano)
             self.tiros.append(novo_tiro)
             self.ultimo_disparo = tempo_atual
 

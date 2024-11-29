@@ -112,7 +112,7 @@ class GerenciadorTelas:
         self.altura = self.altura_padrao
         self.cor = cor
         self.volume_efeitos = 0
-        self.musica = pygame.mixer.music.load("../assets/musica_menu.mp3")
+        self.musica = pygame.mixer.music.load("../assets/sons/journeyoftheprairieking(ending).mp3")
         pygame.mixer.music.set_volume(0)
         self.volume_musica = pygame.mixer.music.get_volume()
         self.display = pygame.display.set_mode((self.largura, self.altura), pygame.RESIZABLE)
@@ -130,7 +130,7 @@ class GerenciadorTelas:
         `K_ESCAPE`, `QUIT`), atualizar as telas, define os frames
         por segundo e troca o estado da tela
         '''
-        pygame.mixer.music.play(-1, 1500)
+        pygame.mixer.music.play(-1, 0, 1500)
         tempo_press = pygame.time.get_ticks()
         while (self.rodando):
             if (self.estado != 'jogando'):
@@ -188,8 +188,6 @@ class GerenciadorTelas:
                         self.tela_pause.set_botoes = 0
                         self.tela_pause.pos_botao = 0
                         self.pausado = not self.pausado
-
-                self.tela.movimento_players(teclas_pressionadas)
 
                 if not self.pausado:
                     self.tela.atualizar()
@@ -260,20 +258,32 @@ class GerenciadorTelas:
                 pygame.display.set_caption("Opções")
                 self.estado = 'opcoes'
             case 'inicio':
+                if (self.estado == 'jogando'):
+                    self.musica = pygame.mixer.music.load("../assets/sons/journeyoftheprairieking(ending).mp3")
+                    pygame.mixer.music.play(-1, 0, 1500)
                 self.tela = inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
                 pygame.display.set_caption("Início")
                 self.estado = 'inicio'
             case 'oceano':
+                if (self.estado == 'selecao'):
+                    self.musica = pygame.mixer.music.load("../assets/sons/journeyoftheprairieking(overworld).mp3")
+                    pygame.mixer.music.play(-1, 0, 1500)
                 self.pausado = False
                 self.tela = jogo.oceano(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, self.display)
                 pygame.display.set_caption("Mapa oceano")
                 self.estado = "jogando"
             case 'deserto':
+                if (self.estado == 'selecao'):
+                    self.musica = pygame.mixer.music.load("../assets/sons/journeyoftheprairieking(theoutlaw).mp3")
+                    pygame.mixer.music.play(-1, 0, 1500)
                 self.pausado = False
                 self.tela = jogo.deserto(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, self.display)
                 pygame.display.set_caption("Mapa deserto")
                 self.estado = "jogando"
             case 'espaco':
+                if (self.estado == 'selecao'):
+                    self.musica = pygame.mixer.music.load("../assets/sons/journeyoftheprairieking(finalboss).mp3")
+                    pygame.mixer.music.play(-1, 0, 1500)
                 self.pausado = False
                 self.tela = jogo.espaco(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, self.display)
                 pygame.display.set_caption("Mapa espaço")
@@ -294,14 +304,13 @@ class GerenciadorTelas:
             case 'musica':
                 if not self.pausado:
                     self.volume_musica = self.tela.pegar_vol_musica()
-                    self.tela.volume_musica = self.volume_musica
-                    self.tela_pause.volume_musica = self.volume_musica
-                    pygame.mixer.music.set_volume(self.volume_musica)
+                    self.tela_pause.atualizar_vol_musica(self.volume_musica)
                 else:
                     self.volume_musica = self.tela_pause.pegar_vol_musica()
-                    self.tela.volume_musica = self.volume_musica
-                    self.tela_pause.volume_musica = self.volume_musica
-                    pygame.mixer.music.set_volume(self.volume_musica)
+                self.tela.volume_musica = self.volume_musica
+                pygame.mixer.music.set_volume(self.volume_musica)
+            case 'resumir':
+                self.pausado = False
             case _:
                 pass
 

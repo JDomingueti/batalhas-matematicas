@@ -215,6 +215,19 @@ class tela(padrao.tela):
         do volume dos efeitos.
         '''
         return (self.efeitos.ler_posicao())
+    
+    def atualizar_vol_musica(self, novo_volume):
+        '''
+        Método utilizado para atualizar o volume da musica na tela.
+
+        Parâmetro
+        ---------
+        novo_volume: float
+
+            Novo volume a ser definido
+        '''
+        self.volume_musica = novo_volume
+        self.musica.percent = novo_volume
 
     def atualizar_vol_efeitos(self, novo_volume):
         for set_botao in [self.botoes_principais, self.botoes_opcoes]:
