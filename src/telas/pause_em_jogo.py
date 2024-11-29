@@ -2,9 +2,6 @@ import pygame, botoes
 from . import padrao
 
 class tela(padrao.tela):
-<<<<<<< HEAD
-    def __init__(self, largura, altura, cor, volume_musica, volume_efeitos, display, callback_botoes):
-=======
     '''
     Subclasse de `padrao.tela` que define o menu de pause dentro de um 
     cenário de jogo
@@ -104,7 +101,6 @@ class tela(padrao.tela):
 
             Função de retorno dos botões da tela
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(largura, altura, cor, display)
         
         self.volume_musica = volume_musica
@@ -207,11 +203,6 @@ class tela(padrao.tela):
         self.checar_eventos(None)
 
     def pegar_vol_musica(self):
-<<<<<<< HEAD
-        return(self.musica.ler_posicao())
-
-    def pegar_vol_efeitos(self):
-=======
         '''
         Método utilizado para o botão de controle deslizante de ajuste
         do volume da música.
@@ -223,7 +214,6 @@ class tela(padrao.tela):
         Método utilizado para o botão de controle deslizante de ajuste
         do volume dos efeitos.
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         return (self.efeitos.ler_posicao())
 
     def atualizar_vol_efeitos(self, novo_volume):

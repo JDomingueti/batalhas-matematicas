@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-import pygame, random
-
-class jogo:
-    def __init__(self, largura, altura, cor, musica):
-        pygame.init()
-=======
-import pygame, random #, json
-from typing import List
-from abc import ABC, abstractmethod
-from eventos import evento, eventos_oceano, eventos_deserto, eventos_espaco
-
-class jogo(ABC):
-    @abstractmethod
-    def __init__(self, largura, altura, cor, musica, efeitos, display):
-        super().__init__()
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-        self.largura = largura
-        self.altura = altura
-        self.cor = cor
-        self.tamanho = (self.largura, self.altura)
-<<<<<<< HEAD
-        self.display = pygame.display.set_mode(self.tamanho)
-=======
 import pygame, random #, json
 from typing import List
 from abc import ABC, abstractmethod
@@ -137,48 +112,15 @@ class jogo(ABC):
             self.display = pygame.display.set_mode((largura, altura), pygame.FULLSCREEN)
         else:
             self.display = pygame.display.set_mode((largura, altura))
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.fundo = pygame.rect.Rect(0, 0, largura, altura)
         self.display.fill(self.cor)
         self.volume_musica = volume_musica
         self.volume_efeitos = volume_efeitos
         self.eventos : List[evento.evento]= []
+        self.obstaculos : List[obstaculo] = pygame.sprite.Group()
+        self.contador_eventos = 0
+        self.separador_eventos = 5000
         self.frame_atual = 0
-
-    def atualizar(self):
-        '''
-        Método que atualiza as informações do jogo.
-        '''
-        self.gerar_eventos()
-        if len(self.eventos) > 0:
-            for evento in self.eventos:
-                evento.aviso_direcao()
-                evento.atualizar()
-                if evento.matar(self.explodir):
-                    self.eventos.remove(evento)
-                    self.contador_eventos = pygame.time.get_ticks()
-        self.checar_colisoes()
-        # pygame.display.flip()
-        self.frame_atual += 1
-
-<<<<<<< HEAD
-    def checar_eventos(self, evento):
-=======
-        self.display = display
-        if pygame.display.is_fullscreen():
-            self.display = pygame.display.set_mode((largura, altura), pygame.FULLSCREEN)
-        else:
-            self.display = pygame.display.set_mode((largura, altura))
-        self.fundo = pygame.rect.Rect(0, 0, largura, altura)
-        self.display.fill(self.cor)
-        self.volume_musica = musica
-        self.volume_efeitos = efeitos
-        self.relogio = pygame.time.Clock()
-        self.eventos : List[evento.evento]= []
-        self.frame_atual = 0
-        self.contador_eventos = pygame.time.get_ticks()
-        self.separador_eventos = 2000
-
         # self.player_1 = ...(...)
         # self.player_2 = ...(...)
         # self.inimigos = []
@@ -186,7 +128,9 @@ class jogo(ABC):
         #   self.configuracoes = json.load(config_file)
 
     def atualizar(self):
-        self.gerar_eventos()
+        '''
+        Método que atualiza as informações do jogo.
+        '''
         if len(self.eventos) > 0:
             for evento in self.eventos:
                 evento.aviso_direcao()
@@ -194,18 +138,17 @@ class jogo(ABC):
                 if evento.matar(self.explodir):
                     self.eventos.remove(evento)
                     self.contador_eventos = pygame.time.get_ticks()
+        else:
+            self.gerar_eventos()
         self.checar_colisoes()
         pygame.display.flip()
         self.frame_atual += 1
 
     def desenhar(self):
-=======
-    def desenhar(self):
         '''
         Método que desenha todos as imagens do jogo no atributo 
         self.display
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.display.blit(self.fundo, (0, 0))
         self.obstaculos.draw(self.display)
         if len(self.eventos) > 0:
@@ -214,18 +157,6 @@ class jogo(ABC):
 
     # @abstractmethod
     def checar_colisoes(self):
-<<<<<<< HEAD
-    # Colisão dos tiros
-        # Com obstáculos
-        # ...
-        # Com eventos
-        # ...
-        # Com players
-        # ...
-        # Com inimigos
-        # ...
-    # Colisão dos obstáculos
-=======
         '''
         Método que checa todas as colisões que podem ocorrer
         '''
@@ -239,32 +170,16 @@ class jogo(ABC):
             # Com inimigos
             # ...
         # Colisão dos obstáculos
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         for bloco in self.obstaculos:
             # Com eventos
             for evento in self.eventos:
-                colisao = evento.verificar_colisao(bloco, 10)
-                if colisao:
+                destruir = bloco.verificar_colisao(evento, 5)
+                if destruir:
                     self.obstaculos.remove(bloco)
             # Com players
             # ...
             # Com inimigos
             # ...
-<<<<<<< HEAD
-    # Colisão eventos
-        # Com players
-        # ...
-        # Com inimigos
-        # ...
-    # Colisão players
-        # Com inimigos
-        # ...
-    
-    def gerar_inimigos(self):
-        # Implementar geração de inimigos
-        # ...
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-=======
         # Colisão eventos
             # Com players
             # ...
@@ -273,14 +188,13 @@ class jogo(ABC):
         # Colisão players
             # Com inimigos
             # ...
-    
+        
     def gerar_inimigos(self):
         '''
         Método destinado a geração de inimigos.
         '''
         # Implementar geração de inimigos
         # ...
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pass
 
     def criar_obstaculos(self, vida, cor = (0, 0, 0), nome = None, alcance = 0):
@@ -325,15 +239,7 @@ class jogo(ABC):
                     else:
                         bloco = obstaculo(esquerda, topo, self.largura_blocos, self.altura_blocos, vida, cor, nome)
                         self.obstaculos.add(bloco)
-    
-<<<<<<< HEAD
-<<<<<<< HEAD
-    def draw(self):
-        self.display.blit(self.fundo, (0, 0))
-        self.obstaculos.draw(self.display)
-    
-    def gerar_eventos(self):
-=======
+
     def movimento_players(self, evento : pygame.key):
         '''
         Método destinado a implementação do movimento dos jogadores
@@ -348,7 +254,6 @@ class jogo(ABC):
         # ...
         # Movimento player_2
         # ...
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pass
 
     @abstractmethod
@@ -373,30 +278,6 @@ class jogo(ABC):
             self.eventos.append(evento.explosao(rect, self.display, self.volume_efeitos))
 
 class oceano(jogo):
-<<<<<<< HEAD
-    def __init__(self, largura, altura, cor, musica, efeitos):
-        super().__init__(largura, altura, cor, musica)
-=======
-    def movimento_players(self, eventos : pygame.key):
-        # Movimento player_1
-        # ...
-        # Movimento player_2
-        # ...
-        pass
-
-    @abstractmethod
-    def gerar_eventos(self):
-        pass
-    
-    def explodir(self, rect):
-        if isinstance(rect, pygame.Rect):
-            self.eventos.append(evento.explosao(rect, self.display, self.volume_efeitos))
-
-class oceano(jogo):
-    def __init__(self, largura, altura, cor, musica, efeitos, display):
-        super().__init__(largura, altura, cor, musica, efeitos, display)
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-=======
     '''
     Subclasse de jogo que define o cenário `Oceano`.
     '''
@@ -444,7 +325,6 @@ class oceano(jogo):
             eventos (chances entre 0 e 1)
         '''
         super().__init__(largura, altura, cor, musica, efeitos, display)
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pygame.display.set_caption("Mapa oceano")
         self.fundos = []
         for i in [1, 2]:
@@ -457,24 +337,14 @@ class oceano(jogo):
         self.tamanho_mapa = (len(self.mapa[0]), len(self.mapa))
         self.largura_blocos = self.largura // self.tamanho_mapa[0]
         self.altura_blocos = self.altura // self.tamanho_mapa[1]
-        self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_oceano_{0}.png"
         self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
-<<<<<<< HEAD
         self.fundo_atual = 1
-<<<<<<< HEAD
-=======
-=======
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.chances = {
             'tubarao': 0.3,
             'caranguejo': 0.3,
             'bando_aguas_vivas': 0.4
         }
-<<<<<<< HEAD
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-=======
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
 
     def atualizar(self):
         super().atualizar()
@@ -497,8 +367,8 @@ class oceano(jogo):
                 chance_bando_aguas_vivas = random.random()
                 if chance_bando_aguas_vivas <= self.chances['bando_aguas_vivas']:
                     self.eventos.append(eventos_oceano.bando_aguas_vivas(self.display, self.volume_efeitos))
+                self.contador_eventos = pygame.time.get_ticks()
 
-<<<<<<< HEAD
 class deserto(jogo):
     '''
     Subclasse de jogo que define o cenário `Deserto`.
@@ -548,30 +418,6 @@ class deserto(jogo):
         '''
         super().__init__(largura, altura, cor, musica, efeitos, display)
         pygame.display.set_caption("Mapa deserto")
-<<<<<<< HEAD
-        super().__init__(largura, altura, cor, musica)
-=======
-    def gerar_eventos(self):
-        if len(self.eventos) == 0:
-            if (pygame.time.get_ticks() - self.contador_eventos) >= self.separador_eventos:
-                chance_tubarao = random.random()
-                if chance_tubarao <= self.chances['tubarao']:
-                    self.eventos.append(eventos_oceano.tubarao(self.display, self.volume_efeitos))
-                chance_caranguejo = random.random()
-                if chance_caranguejo <= self.chances['caranguejo']:
-                    self.eventos.append(eventos_oceano.caranguejo(self.display, self.volume_efeitos))
-                chance_bando_aguas_vivas = random.random()
-                if chance_bando_aguas_vivas <= self.chances['bando_aguas_vivas']:
-                    self.eventos.append(eventos_oceano.bando_aguas_vivas(self.display, self.volume_efeitos))
-
-class deserto(jogo):
-    def __init__(self, largura, altura, cor, musica, efeitos, display):
-        super().__init__(largura, altura, cor, musica, efeitos, display)
-        pygame.display.set_caption("Mapa deserto")
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-        self.fundo = pygame.image.load("../assets/fundos/deserto_1.png")
-        self.fundo = pygame.transform.scale(self.fundo, (largura, altura))
-=======
         self.fundos = []
         for i in [1,2]:
             fundo_i = pygame.image.load(f"../assets/fundos/deserto_{i}.png")
@@ -579,7 +425,6 @@ class deserto(jogo):
             self.fundos.append(fundo_i)
         self.fundo_atual = 0
         self.fundo = self.fundos[self.fundo_atual]
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.mapa = mapa_deserto
         self.tamanho_mapa = (len(self.mapa[0]), len(self.mapa))
         self.largura_blocos = largura // self.tamanho_mapa[0]
@@ -587,21 +432,12 @@ class deserto(jogo):
         self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_deserto_{0}.png"
         self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
-<<<<<<< HEAD
         self.fundo_atual = 1
-<<<<<<< HEAD
-=======
-=======
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.chances = {
             "bola_de_feno" : 0.4,
             "verme_da_areia" : 0.3,
             "nuvem_gafanhotos" : 0.3
         }
-<<<<<<< HEAD
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-=======
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
     
     def atualizar(self):
         super().atualizar()
@@ -624,31 +460,7 @@ class deserto(jogo):
                     self.eventos.append(eventos_deserto.nuvem_gafanhotos(self.display, self.volume_efeitos))
                 self.contador_eventos = pygame.time.get_ticks()
 
-<<<<<<< HEAD
 class espaco(jogo):
-<<<<<<< HEAD
-    def __init__(self, largura, altura, cor, musica, efeitos):
-        super().__init__(largura, altura, cor, musica)
-=======
-    def gerar_eventos(self):
-        if len(self.eventos) == 0:
-            if (pygame.time.get_ticks() - self.contador_eventos) >= self.separador_eventos:
-                chance_bola_de_feno = random.random()
-                if chance_bola_de_feno <= self.chances['bola_de_feno']:
-                    self.eventos.append(eventos_deserto.bola_de_feno(self.display, self.volume_efeitos))
-                chance_verme_da_areia = random.random()
-                if chance_verme_da_areia <= self.chances['verme_da_areia']:
-                    self.eventos.append(eventos_deserto.verme_da_areia(self.display, self.volume_efeitos))
-                chance_nuvem_gafanhotos = random.random()
-                if chance_nuvem_gafanhotos <= self.chances['nuvem_gafanhotos']:
-                    self.eventos.append(eventos_deserto.nuvem_gafanhotos(self.display, self.volume_efeitos))
-                self.contador_eventos = pygame.time.get_ticks()
-
-class espaco(jogo):
-    def __init__(self, largura, altura, cor, musica, efeitos, display):
-        super().__init__(largura, altura, cor, musica, efeitos, display)
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-=======
     '''
     Subclasse de jogo que define o cenário `Espaco`.
     '''
@@ -696,7 +508,6 @@ class espaco(jogo):
             eventos (chances entre 0 e 1)
         '''
         super().__init__(largura, altura, cor, musica, efeitos, display)
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pygame.display.set_caption("Mapa espaco")
         self.fundos = []
         for i in [1,2]:
@@ -712,20 +523,11 @@ class espaco(jogo):
         self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_espaco_{0}.png"
         self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
-<<<<<<< HEAD
         self.fundo_atual = 1
-<<<<<<< HEAD
-=======
-=======
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.chances = {
             "cometa" : 0.4,
             "space" : 0.3
         }
-<<<<<<< HEAD
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
-=======
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
 
     def atualizar(self):
         super().atualizar()
@@ -745,20 +547,6 @@ class espaco(jogo):
                     self.eventos.append(eventos_espaco.invasores_do_espaco(self.display, self.volume_efeitos))
                 self.contador_eventos = pygame.time.get_ticks()
 
-<<<<<<< HEAD
-=======
-    def gerar_eventos(self):
-        if len(self.eventos) == 0:
-            if (pygame.time.get_ticks() - self.contador_eventos) >= self.separador_eventos:
-                chance_cometa = random.random()
-                if chance_cometa <= self.chances['cometa']:
-                    self.eventos.append(eventos_espaco.cometa(self.display, self.volume_efeitos))
-                chance_space = random.random()
-                if chance_space <= self.chances['space']:
-                    self.eventos.append(eventos_espaco.invasores_do_espaco(self.display, self.volume_efeitos))
-                self.contador_eventos = pygame.time.get_ticks()
-
->>>>>>> 788de3efd9ad63d94405cf9ee7408d859c9e0534
 class obstaculo(pygame.sprite.Sprite):
     '''
     Subclasse que herda a classe pygame.sprite.Sprite destinada aos 
@@ -782,7 +570,7 @@ class obstaculo(pygame.sprite.Sprite):
 
         Valor que indica a vida do obstáculo
     '''
-    def __init__(self, x, y, largura, altura, vida, cor = (150,150,150), nome = None):
+    def __init__(self, x, y, largura, altura, vida, cor = (150,150,150), nome = None, transparente: bool = False):
         '''
         Método de inicialização dos obstáculos
 
@@ -816,18 +604,62 @@ class obstaculo(pygame.sprite.Sprite):
         nome: str | None
 
             Nome do arquivo a ser carregado para utilizar de sprite.
+
+        transparente: bool
+
+            Caso queira criar um obstáculo transparente, deve ser passado
+            esse parâmetro como true, sem passar o parâmetro `nome`
         '''
         super().__init__()
         if nome == None:
             self.image = pygame.Surface((largura, altura))
-            self.image.fill(cor)
+            if not transparente:
+                self.image.fill(cor)
             self.rect = self.image.get_rect(topleft = (x, y))
         else:
             self.image = pygame.image.load(nome)
             self.image = pygame.transform.scale(self.image, (largura, altura))
             self.rect = self.image.get_rect(topleft = (x, y))
         self.vida = vida
-        
+        self.dano = 5
+        self.contador_dano = 0
+        self.separador_dano = 500
+
+    def verificar_colisao(self, objeto : evento.evento | pygame.Rect, dano : int = 0):
+        if isinstance(objeto, evento.evento):
+            return objeto.verificar_colisao(self.rect, self.dano)
+        elif isinstance(objeto, pygame.Rect):
+            if self.rect.colliderect(objeto):
+                if objeto.top <= self.rect.bottom:
+                    if objeto.left > self.rect.right or objeto.right < self.rect.left:
+                        pass
+                    else:
+                        objeto.top = min(objeto.top, self.rect.bottom)
+                if objeto.bottom >= self.rect.top:
+                    if objeto.left > self.rect.right or objeto.right < self.rect.left:
+                        pass
+                    else:
+                        objeto.bottom = self.rect.top
+                if objeto.left <= self.rect.right:
+                    if objeto.top > self.rect.bottom or objeto.bottom < self.rect.top:
+                        pass
+                    else:
+                        objeto.left = self.rect.right
+                if objeto.right >= self.rect.left:
+                    if objeto.top > self.rect.bottom or objeto.bottom < self.rect.top:
+                        pass
+                    else:
+                        objeto.right = self.rect.left
+                if pygame.time.get_ticks() - self.contador_dano > self.separador_dano:
+                    self.vida -= dano
+                    self.contador_dano = pygame.time.get_ticks()
+                if self.vida <= 0:
+                    return True
+                return False
+        else:
+            # Objeto tem que possuir atributos rect e dano
+            return self.verificar_colisao(objeto.rect, objeto.dano)
+            
 mapa_oceano = [
     [" "," "," "," "," "," "," "," "," "," "," ","x","x","x","x","x","x","x"," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
     [" "," "," "," "," "," "," "," "," "," "," "," "," ","x","x","x","x"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],

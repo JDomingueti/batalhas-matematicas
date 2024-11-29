@@ -1,14 +1,9 @@
 import pygame, random
 from abc import ABC, abstractmethod
-from math import sin
 
 ''' Arquivo para implementação dos eventos dos cenários '''
 
 class evento(ABC):
-<<<<<<< HEAD
-    @abstractmethod
-    def __init__(self, tela: pygame.Surface, volume_efeitos):
-=======
     '''
     Classe padrão dos eventos, criada para servir de base nos métodos
     e compartilhar métodos e linhas de código repetidas.
@@ -68,7 +63,6 @@ class evento(ABC):
 
             Valor do volume dos efeitos em jogo
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.largura_tela = tela.get_width()
         self.altura_tela = tela.get_height()
         self.tela = tela
@@ -79,24 +73,18 @@ class evento(ABC):
         self.caminho = "../assets/eventos/"
 
     def aviso_direcao(self):
-<<<<<<< HEAD
-=======
         '''
         Gera o aviso na tela que um evento foi inicializado e a posição
         na qual o evento está vindo
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         if self.comecou and (pygame.time.get_ticks() - self.contador <= 2500):
             self.tela.blit(self.img_aviso, self.rect_aviso)
 
     @abstractmethod
     def atualizar(self):
-<<<<<<< HEAD
-=======
         '''
         Método que atualiza as informações do evento
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         if not self.comecou:
             self.contador = pygame.time.get_ticks()
             self.som.play(-1, fade_ms=2000)
@@ -105,18 +93,13 @@ class evento(ABC):
 
     @abstractmethod
     def desenhar(self):
-<<<<<<< HEAD
-=======
         '''
         Método que desenha o evento na superfície da tela
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pass
 
     @abstractmethod
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
-<<<<<<< HEAD
-=======
         '''
         Método para verificar a colisão do(s) retângulo(s) do evento
 
@@ -130,34 +113,24 @@ class evento(ABC):
             
             Dano a ser realizado ao evento caso tenha tido a colisão
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pass
 
     @abstractmethod
     def matar(self):
-<<<<<<< HEAD
-=======
         '''
         Método que verifica se o evento deve ser destruído com base
         na posição e na vida
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pass
 
     @abstractmethod
     def pegar_rect(self):
-<<<<<<< HEAD
-=======
         '''
         Método que retorna o(s) retângulo(s) do evento
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         pass
 
-
 class explosao(evento):
-<<<<<<< HEAD
-=======
     '''
     Evento visual para ser gerado na morte dos outros eventos
     Herda da classe evento.evento para melhor monitoramento e interação
@@ -206,7 +179,6 @@ class explosao(evento):
         Número que indica o número de frames que cada sprite permanece
         na tela
     '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
     def __init__(self, rect: pygame.Rect, tela: pygame.Surface, volume_efeitos: pygame.mixer.Sound):
         self.tela = tela
         caminho = "../assets/eventos/"
@@ -222,11 +194,7 @@ class explosao(evento):
         self.destruir = False
         self.sprite_atual = 0
         self.frame_atual = 0
-<<<<<<< HEAD
-        self.frames_por_sprites = 20
-=======
         self.frames_por_sprites = 15
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
 
     def aviso_direcao(self):
         pass
@@ -240,10 +208,6 @@ class explosao(evento):
                 self.frame_atual = 0
                 self.sprite_atual += 1
             else:
-<<<<<<< HEAD
-
-=======
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
                 self.destruir = True
         self.frame_atual += 1
 
@@ -259,8 +223,4 @@ class explosao(evento):
         return self.destruir
 
     def pegar_rect(self):
-<<<<<<< HEAD
-        return None
-=======
         return self.rect
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c

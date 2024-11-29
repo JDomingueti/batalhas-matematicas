@@ -3,9 +3,6 @@ from . import evento
 from math import sin
 
 class bola_de_feno(evento.evento):
-<<<<<<< HEAD
-    def __init__(self, tela: pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
-=======
     '''
     Atributos adicionais
     --------------------
@@ -73,7 +70,6 @@ class bola_de_feno(evento.evento):
         '''
         Inicializa um objeto do tipo eventos_deserto.bola_de_feno
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(tela, volume_efeitos)
         self.tamanho = self.largura_tela//10
         self.y_inicio = random.randint(self.altura_tela//4, 3*self.altura_tela//4)
@@ -82,18 +78,9 @@ class bola_de_feno(evento.evento):
         self.velocidade_x = random.randint(4,7) * self.lado_inicio
         self.aux_y = 0
 
-<<<<<<< HEAD
-        self.imgs = []
-        for i in range(1,5):
-            self.imgs.append(pygame.transform.scale(pygame.image.load(self.caminho + f"bola_de_feno/{i}.png"), (self.tamanho, self.tamanho)))
-        self.bola_de_feno = pygame.image.load(self.caminho + "bola_de_feno/1.png")
-        self.bola_de_feno = pygame.transform.scale(self.bola_de_feno, (self.tamanho, self.tamanho))
-        self.bola_de_feno_rect = self.imgs[0].get_rect()
-=======
         self.bola_de_feno = pygame.image.load(self.caminho + "bola_de_feno/1.png")
         self.bola_de_feno = pygame.transform.scale(self.bola_de_feno, (self.tamanho, self.tamanho))
         self.bola_de_feno_rect = self.bola_de_feno.get_rect()
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.bola_de_feno_rect.topleft = (self.x_inicio - self.tamanho//2, self.y_inicio - self.tamanho//2)
         self.vida = 80
         self.sprite_atual = 0
@@ -104,10 +91,6 @@ class bola_de_feno(evento.evento):
         posicao_aviso = (self.largura_tela - self.tamanho/2 if (self.lado_inicio == -1) else self.tamanho/2, self.y_inicio - tamanho_aviso[1]/2)
         self.rect_aviso = pygame.Rect(posicao_aviso, tamanho_aviso)
         self.img_aviso = pygame.transform.scale(pygame.image.load(self.caminho + "bola_de_feno/aviso.png"), tamanho_aviso)
-<<<<<<< HEAD
-=======
-        
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
 
     def atualizar(self):
         super().atualizar()
@@ -149,9 +132,6 @@ class bola_de_feno(evento.evento):
         return [self.bola_de_feno_rect]
 
 class nuvem_gafanhotos(evento.evento):
-<<<<<<< HEAD
-    def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-=======
     '''
     Atributos adicionais
     --------------------
@@ -234,7 +214,6 @@ class nuvem_gafanhotos(evento.evento):
         '''
         Inicializa um objeto do tipo eventos_deserto.nuvem_gafanhotos
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(tela, volume_efeitos)
         self.tamanho = 20
         self.vida = 10
@@ -278,21 +257,14 @@ class nuvem_gafanhotos(evento.evento):
         self.frame_atual += 1
 
     def desenhar(self):
-<<<<<<< HEAD
-        self.aviso_direcao
-=======
         self.aviso_direcao()
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         for pos, gafanhoto in enumerate(self.gafanhotos_rects):
             self.tela.blit(self.gafanhotos_imgs[self.imgs[pos]], gafanhoto)
 
     def criar_gafanhoto(self):
-<<<<<<< HEAD
-=======
         '''
         Método utilizado para criar os objetos do evento (gafanhotos)
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         y_gafanhoto = self.y_inicio + random.randint(-self.altura_tela//4, self.altura_tela//4) - self.tamanho
         gafanhoto = pygame.rect.Rect(self.x_inicio, y_gafanhoto, self.tamanho, self.tamanho)
         self.gafanhotos_rects.append(gafanhoto)
@@ -331,9 +303,6 @@ class nuvem_gafanhotos(evento.evento):
         return self.gafanhotos_rects
 
 class verme_da_areia(evento.evento):
-<<<<<<< HEAD
-    def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-=======
     '''
     Atributos adicionais
     --------------------
@@ -423,7 +392,6 @@ class verme_da_areia(evento.evento):
         '''
         Inicializa um objeto do tipo eventos_deserto.verme_da_areia
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(tela, volume_efeitos)
         self.x_inicio = random.randint(0, self.largura_tela//3)
         self.x_fim = self.largura_tela - self.x_inicio
@@ -434,11 +402,7 @@ class verme_da_areia(evento.evento):
             self.x_fim = temp
         self.velocidade_y_inicial = random.randint(10, 15)
         self.gravidade = 0.2
-<<<<<<< HEAD
-        # Fórmula para achar o tempo em tela e calcular a velocidade em x
-=======
         
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         tempo_em_tela = (2*self.velocidade_y_inicial)/self.gravidade
         self.velocidade_x = (self.x_fim - self.x_inicio)/tempo_em_tela
 

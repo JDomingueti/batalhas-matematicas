@@ -2,24 +2,6 @@ import pygame, random
 from . import evento
 
 class bando_aguas_vivas(evento.evento):
-<<<<<<< HEAD
-    def __init__(self, tela : pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
-        super().__init__(tela, volume_efeitos)
-        self.tamanho = (self.largura_tela//15, self.altura_tela//8)
-        self.y_inicio = random.randint(self.altura_tela//7, 6*self.altura_tela//7)
-        self.quantidade_spawn = random.randint(5,8)
-        self.x_inicio = self.largura_tela + self.tamanho[0] if (self.lado_inicio == -1) else -2*self.tamanho[0]
-        self.max_velocidade_x = random.randint(4,6)
-        self.imgs_agua_viva = []
-
-        for i in [1,2,3,4]:
-            self.imgs_agua_viva.append(pygame.transform.scale(pygame.image.load(self.caminho + f"agua_viva/{i}.png"), (self.tamanho[0], self.tamanho[1])))
-        self.velocidade_x = 0
-        self.incremento_velocidade_x = 1/2
-        self.afastamento = self.altura_tela//7
-        self.separador_spawn = pygame.time.get_ticks()
-        self.quantidade_spawnada = 0
-=======
     '''
     Atributos adicionais
     --------------------
@@ -125,18 +107,12 @@ class bando_aguas_vivas(evento.evento):
         self.quantidade_spawnada = 0
         self.separador_spawn = pygame.time.get_ticks()
         self.tempo_spawn = 400
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.vida = 40
         self.vidas = []
         self.agua_viva_rects = []
         self.imgs = []
-<<<<<<< HEAD
-        self.frame_por_sprite = 30
-        self.frame_atual = 0
-=======
         self.frame_atual = 0
         self.frame_por_sprite = 30
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.som = pygame.mixer.Sound(self.caminho + "sons/bolhas1.mp3")
         tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
         posicao_aviso = (self.largura_tela - 2*tamanho_aviso[0] if (self.lado_inicio == -1) else tamanho_aviso[0], self.y_inicio - tamanho_aviso[1]/2)
@@ -159,31 +135,19 @@ class bando_aguas_vivas(evento.evento):
             self.frame_atual = 0
         if (self.comecou and ((pygame.time.get_ticks() - self.contador) > 2000)):
             if len(self.agua_viva_rects) < self.quantidade_spawn:
-<<<<<<< HEAD
-                if ((pygame.time.get_ticks() - self.separador_spawn) > 400):
-=======
                 if ((pygame.time.get_ticks() - self.separador_spawn) > self.tempo_spawn):
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
                     if self.quantidade_spawnada < self.quantidade_spawn:
                         self.criar_agua_viva()
                         self.separador_spawn = pygame.time.get_ticks()
             if len(self.agua_viva_rects) > 0:
                 for agua_viva in self.agua_viva_rects:
                     agua_viva.centerx += self.velocidade_x
-<<<<<<< HEAD
-            if abs(self.velocidade_x) < self.max_velocidade_x:
-                self.velocidade_x += self.incremento_velocidade_x * self.lado_inicio
-        self.frame_atual += 1
-
-    def criar_agua_viva(self):
-=======
         self.frame_atual += 1
 
     def criar_agua_viva(self):
         '''
         Método utilizado para criar os objetos do evento (água-viva)
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         y_atual = self.y_inicio + random.randint(-self.afastamento, self.afastamento)
         agua_viva = pygame.rect.Rect(self.x_inicio, y_atual, self.tamanho[0], self.tamanho[1])
         self.agua_viva_rects.append(agua_viva)
@@ -220,9 +184,6 @@ class bando_aguas_vivas(evento.evento):
         return self.agua_viva_rects
 
 class caranguejo(evento.evento):
-<<<<<<< HEAD
-    def __init__(self, tela: pygame.SurfaceType, volume_efeitos : pygame.mixer.Sound):
-=======
     '''
     Atributos adicionais
     --------------------
@@ -339,7 +300,6 @@ class caranguejo(evento.evento):
         '''
         Inicializa um objeto da classe eventos_oceano.caranguejo
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(tela, volume_efeitos)
 
         self.vida = 300
@@ -381,13 +341,8 @@ class caranguejo(evento.evento):
         self.prox_garra = 1    
         # Sprites: [Garra_esquerda, Corpo, Garra_direita, Garra_estendida]
         self.sprites_atuais = [0, 0, 0, 0]
-<<<<<<< HEAD
-        self.frames_por_sprites = 30
-        self.frame_atual = 0
-=======
         self.frame_atual = 0
         self.frames_por_sprites = 30
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.som = pygame.mixer.Sound(self.caminho + "sons/caranguejo1.mp3")
 
         tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
@@ -477,9 +432,6 @@ class caranguejo(evento.evento):
         return [self.garra_esquerda_rect_atual, self.caranguejo_rect, self.garra_direita_rect_atual]
 
 class tubarao(evento.evento):
-<<<<<<< HEAD
-    def __init__(self, tela: pygame.Surface, volume_efeitos : pygame.mixer.Sound):
-=======
     '''
     Atributos adicionais
     --------------------
@@ -557,7 +509,6 @@ class tubarao(evento.evento):
         '''
         Inicializa um objeto da classe eventos_oceano.tubarao
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(tela, volume_efeitos)
         self.tamanho = (self.largura_tela//3, self.altura_tela//4)
         self.y_inicio = self.altura_tela//2
@@ -565,30 +516,19 @@ class tubarao(evento.evento):
         self.x_fim = self.largura_tela if self.lado_inicio == 1 else -self.tamanho[0]
         self.imgs_tubarao = []
         for i in range(1, 9):
-<<<<<<< HEAD
-            self.imgs_tubarao.append(pygame.transform.scale(pygame.image.load(self.caminho + f"tubarao/{i}.png"), self.tamanho))
-            if (self.lado_inicio == -1):
-                self.imgs_tubarao[i-1] = pygame.transform.flip(self.imgs_tubarao[i-1], 1, 0)
-=======
             img = pygame.image.load(self.caminho + f"tubarao/{i}.png")
             img = pygame.transform.scale(img, self.tamanho)
             if (self.lado_inicio == -1):
                 img = pygame.transform.flip(img, 1, 0)
             self.imgs_tubarao.append(img)
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.vida = 400
         self.tubarao_rect = pygame.rect.Rect(self.x_inicio, self.y_inicio - self.tamanho[1]//2, self.tamanho[0], self.tamanho[1])
         self.afastamento_max = random.randint(self.altura_tela//10, self.altura_tela//5)
         self.velocidade_x = 5*self.lado_inicio
         self.velocidade_y = 0
         self.adicao_velocidade_y = random.choice([-1,1])*(random.randint(self.afastamento_max//2, self.afastamento_max))/self.altura_tela
-<<<<<<< HEAD
-        self.frame_atual = 0
-        self.sprite_atual = 0
-=======
         self.sprite_atual = 0
         self.frame_atual = 0
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.frames_por_sprites = 30
         self.som = pygame.mixer.Sound(self.caminho + "sons/tubarao.mp3")
         tamanho_aviso = (self.largura_tela/20, self.altura_tela/10)
@@ -636,8 +576,4 @@ class tubarao(evento.evento):
         return False
 
     def pegar_rect(self):
-<<<<<<< HEAD
         return [self.tubarao_rect]
-=======
-        return [self.tubarao_rect]
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c

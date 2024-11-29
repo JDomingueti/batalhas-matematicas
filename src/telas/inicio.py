@@ -2,15 +2,6 @@ import pygame, sys, botoes
 from . import padrao
 
 class tela(padrao.tela):
-<<<<<<< HEAD
-    def __init__(self, largura, altura, cor, musica, efeitos, fundo, display, callback_botoes):
-        '''
-        Parameters
-        ----------
-        efeitos: float
-            Valor entre 0 e 1 que representa o volume
-            dos efeitos.
-=======
     '''
     Subclasse de `padrao.tela` que define o menu de início
     
@@ -83,7 +74,6 @@ class tela(padrao.tela):
         callback_botões: function
 
             Função de retorno dos botões da tela
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         '''
         super().__init__(largura, altura, cor, display)
         pygame.display.set_caption("Inicio")
@@ -92,31 +82,17 @@ class tela(padrao.tela):
         self.nome_fundo = fundo
         self.fundo = fundo
         if self.fundo != None:
-<<<<<<< HEAD
-            self.caminho_fundo += fundo
-            self.fundo = pygame.image.load(self.caminho_fundo)
-            self.fundo = pygame.transform.scale(self.fundo, (largura, altura))
-        self.rect = self.fundo.get_rect()
-        self.rect.x = 0
-        self.rect.y = 0
-=======
             self.caminho_fundo += self.fundo
             self.fundo = pygame.image.load(self.caminho_fundo)
             self.fundo = pygame.transform.scale(self.fundo, (largura, altura))
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.nome = self.fonte.render("Batalhas Matemáticas", False, "White")
         self.nome_rect = self.nome.get_rect(center = (self.largura//2, self.altura//10))
         x_botoes = self.largura//2
         y_botoes = self.altura//10
         tam_fonte = altura//10
         self.callback_botoes = callback_botoes
-<<<<<<< HEAD
-        self.musica = musica
-        self.volume_efeitos = efeitos
-=======
         self.volume_musica = volume_musica
         self.volume_efeitos = volume_efeitos
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.jogar = botoes.Botao((x_botoes, 4*y_botoes), "Jogar", "Terminal", tam_fonte, 
                         "White", (255,242,0), self.volume_efeitos, True)
         self.opcoes = botoes.Botao((x_botoes, 6*y_botoes), "Opções", "Terminal", tam_fonte, 
@@ -126,16 +102,6 @@ class tela(padrao.tela):
         self.botoes = [self.jogar, self.opcoes, self.sair]
 
     def re_escalar(self, largura_nova, altura_nova):
-<<<<<<< HEAD
-        if self.fundo == None:
-            self.__init__(largura_nova, altura_nova, self.cor, self.musica, self.volume_efeitos, 
-                          None, self.display, self.callback_botoes)
-        else:
-            self.__init__(largura_nova, altura_nova, self.cor, self.musica, self.volume_efeitos, 
-                          self.nome_fundo, self.display, self.callback_botoes)
-
-    def checar_eventos(self, evento = None):
-=======
         '''
         Método que inicializa um novo objeto da subclasse tela atual com
         os mesmos parâmetros, com alterações apenas na largura e altura.
@@ -167,7 +133,6 @@ class tela(padrao.tela):
         evento: pygame.key | None
             Evento a ser analisado na tela, caso haja algum
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         if evento == pygame.K_RETURN:
             match self.pos_botao:
                 case 0:
@@ -188,18 +153,11 @@ class tela(padrao.tela):
             sys.exit()
 
     def desenhar(self):
-<<<<<<< HEAD
-=======
         '''
         Desenha os objetos da subclasse no display do pygame
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.display.fill(self.cor)
         if self.fundo != None:
             self.display.blit(self.fundo, (0,0))
         super().desenhar()
-<<<<<<< HEAD
         self.display.blit(self.nome, self.nome_rect)
-=======
-        self.display.blit(self.nome, self.nome_rect)
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c

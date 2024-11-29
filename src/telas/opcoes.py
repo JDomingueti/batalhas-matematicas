@@ -2,9 +2,6 @@ import pygame, sys, botoes
 from . import padrao
 
 class tela(padrao.tela):
-<<<<<<< HEAD
-    def __init__(self, largura, altura, cor, musica, efeitos, fundo, display, callback_botoes):
-=======
     '''
     Subclasse de `padrao.tela` que define o menu de opções fora dos
     cenários
@@ -85,7 +82,6 @@ class tela(padrao.tela):
 
             Função de retorno dos botões da tela
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         super().__init__(largura, altura, cor, display)
 
         self.nome_fundo = fundo
@@ -106,13 +102,8 @@ class tela(padrao.tela):
         tam_fonte = altura//15
         tam_barras = (self.largura//3, 10)
         
-<<<<<<< HEAD
-        self.volume_musica = musica
-        self.volume_efeitos = efeitos
-=======
         self.volume_musica = volume_musica
         self.volume_efeitos = volume_efeitos
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
 
         self.voltar : botoes.Botao = botoes.Botao((x_botoes, 9 * y_botoes), "Voltar", "Terminal",
                         tam_fonte, "White", (255,242,0), self.volume_efeitos, True)
@@ -162,11 +153,6 @@ class tela(padrao.tela):
             self.atualizar_vol_efeitos(self.pegar_vol_efeitos())
 
     def pegar_vol_musica(self):
-<<<<<<< HEAD
-        return(self.musica.ler_posicao())
-
-    def pegar_vol_efeitos(self):
-=======
         '''
         Método utilizado para o botão de controle deslizante de ajuste
         do volume da música.
@@ -178,5 +164,4 @@ class tela(padrao.tela):
         Método utilizado para o botão de controle deslizante de ajuste
         do volume dos efeitos.
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         return (self.efeitos.ler_posicao())

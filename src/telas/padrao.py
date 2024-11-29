@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-import pygame, sys, botoes
-
-class tela:
-    def __init__(self, largura, altura, cor, display):
-        '''
-        Parameters
-        ----------
-        largura: int
-            Largura máxima da tela
-        altura: int
-            Altura máxima da tela
-        cor: ColorValue
-            Código da cor, pode ser uma tupla 
-            contendo o código rgb ou a str com
-            o nome da cor
-=======
 import pygame, botoes
 from abc import ABC, abstractmethod
 
@@ -86,7 +69,6 @@ class tela(ABC):
             
             Código da cor, pode ser uma tupla contendo o código rgb ou 
             a str com o nome da cor (Ex: (0,0,0) ou ('Black'))
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         '''
         self.largura = largura
         self.altura = altura
@@ -94,13 +76,6 @@ class tela(ABC):
         self.display : pygame.SurfaceType = display
         self.caminho_fundo = "../assets/fundos/"
         self.display.fill(cor)
-<<<<<<< HEAD
-        self.rodando = True
-        self.botoes = []
-        self.pos_botao = 0
-    
-    def desenhar(self):
-=======
         self.botoes = []
         self.pos_botao = 0
     
@@ -111,18 +86,14 @@ class tela(ABC):
         '''
         # Foi feito dessa maneira para reutilizar a mesma função
         # em diferentes tipos de tela
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         for botao in self.botoes:
             botao.display_botao(self.display)
 
     def atualizar(self):
-<<<<<<< HEAD
-=======
         '''
         Método que atualiza os botões da tela analisando o foco do teclado
         e do mouse
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         for pos, botao in enumerate(self.botoes):
             # 'For' utilizado para não focar dois botões (um 
             # selecionado pelo teclado e outro pelo mouse)
@@ -132,12 +103,6 @@ class tela(ABC):
                     botao_.focado = False
                 self.pos_botao = pos
             botao.atualizar()
-<<<<<<< HEAD
-        pygame.display.flip()
-
-    def mover_no_teclado(self, movimento: pygame.event.EventType):
-        # res = None
-=======
 
     def mover_no_teclado(self, movimento: pygame.key):
         '''
@@ -153,7 +118,6 @@ class tela(ABC):
             pela tela.
         
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         if len(self.botoes) > 0:
             if movimento == pygame.K_UP:
                 if isinstance(self.botoes[self.pos_botao], botoes.Selecao_mapas):
@@ -203,15 +167,6 @@ class tela(ABC):
             self.checar_eventos(movimento)
 
     def atualizar_vol_efeitos(self, novo_volume):
-<<<<<<< HEAD
-        for botao in self.botoes:
-            botao.som.set_volume(novo_volume)
-    
-    def checar_eventos(self, evento = None):
-        pass
-
-    def re_escalar(self, largura_nova, altura_nova):
-=======
         '''
         Método utilizado para atualizar o volume dos efeitos dos botões 
         da tela.
@@ -255,5 +210,4 @@ class tela(ABC):
         
             Novo comprimento em y da tela
         '''
->>>>>>> dea53f1aa41b5a56d9244fb01550c69627a4841c
         self.__init__(largura_nova, altura_nova, self.cor, self.display)
