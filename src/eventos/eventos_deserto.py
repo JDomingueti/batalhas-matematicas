@@ -82,7 +82,7 @@ class bola_de_feno(evento.evento):
         self.bola_de_feno = pygame.transform.scale(self.bola_de_feno, (self.tamanho, self.tamanho))
         self.bola_de_feno_rect = self.bola_de_feno.get_rect()
         self.bola_de_feno_rect.topleft = (self.x_inicio - self.tamanho//2, self.y_inicio - self.tamanho//2)
-        self.vida = 80
+        self.vida = 5
         self.sprite_atual = 0
         self.frames_por_sprite = 30
         self.frame_atual = 0
@@ -216,7 +216,7 @@ class nuvem_gafanhotos(evento.evento):
         '''
         super().__init__(tela, volume_efeitos)
         self.tamanho = 20
-        self.vida = 10
+        self.vida = 1
         self.velocidade_x = random.randint(4,8) * self.lado_inicio
         self.metade_y_tela = random.choice([1,2])
         self.x_inicio = self.largura_tela + self.tamanho if self.lado_inicio == -1 else -2 * self.tamanho
@@ -416,7 +416,7 @@ class verme_da_areia(evento.evento):
 
         self.tamanho_corpo = random.randint(8,12)
         self.partes_criadas = 0
-        self.vida = 30
+        self.vida = 3
         self.verme_da_areia_rects = []
         self.verme_da_areia_vidas = []
         self.velocidades_verme_da_areia : list[pygame.Vector2]= []

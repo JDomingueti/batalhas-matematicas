@@ -2,6 +2,7 @@ import pygame, random #, json
 from typing import List
 from abc import ABC, abstractmethod
 from eventos import evento, eventos_oceano, eventos_deserto, eventos_espaco
+import gerenciador
 
 class jogo(ABC):
     '''
@@ -64,9 +65,7 @@ class jogo(ABC):
         - atualizar()
         - desenhar()
         - checar_colisoes()
-        - gerar_inimigos()
         - criar_obstaculos(vida, cor, nome, alcance)
-        - movimento_players(eventos)
         - gerar_eventos()
         - explodir(pygame.Rect)
     '''
@@ -119,13 +118,38 @@ class jogo(ABC):
         self.eventos : List[evento.evento]= []
         self.obstaculos : List[obstaculo] = pygame.sprite.Group()
         self.contador_eventos = 0
-        self.separador_eventos = 5000
+        self.separador_eventos = 30000
         self.frame_atual = 0
-        # self.player_1 = ...(...)
-        # self.player_2 = ...(...)
-        # self.inimigos = []
+        self.gerenciador = gerenciador.Gerenciador(self.largura, self.altura, self.display)
+        self.idx_inimigos = [1, 2, 3, 4]
         # with open("...", "r", encoding="utf-8") as config_file:
         #   self.configuracoes = json.load(config_file)
+
+    def gerenciador_naves(self):
+        if len(self.gerenciador.inimigos) < self.gerenciador.max_inimigos and pygame.time.get_ticks() - self.gerenciador.timer_inimigos > 20000:
+            if self.idx_inimigos:
+                idx = random.choice(self.idx_inimigos)
+                self.gerenciador.criar_inimigos(idx, self.gerenciador.largura_tela // 2, self.gerenciador.largura_tela, self.gerenciador.altura_tela, self.gerenciador.tamanho_veiculo)
+                self.idx_inimigos.remove(idx)
+                self.gerenciador.timer_inimigos = pygame.time.get_ticks()
+
+        if len(self.idx_inimigos) == 0:
+            self.idx_inimigos = [1, 2, 3, 4]
+
+        # Checar a tecla de disparo
+        keys = pygame.key.get_pressed()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_b]:
+            self.gerenciador.v1.disparar()
+        if keys[pygame.K_SEMICOLON]:
+            self.gerenciador.v2.disparar()
+
+        self.gerenciador.v1.rotacionar()
+        self.gerenciador.v2.rotacionar()
+        self.gerenciador.v1.atualizar_tiros()
+        self.gerenciador.v2.atualizar_tiros()
+
+        self.gerenciador.update()
 
     def atualizar(self):
         '''
@@ -141,6 +165,7 @@ class jogo(ABC):
         else:
             self.gerar_eventos()
         self.checar_colisoes()
+        self.gerenciador_naves()
         pygame.display.flip()
         self.frame_atual += 1
 
@@ -150,6 +175,7 @@ class jogo(ABC):
         self.display
         '''
         self.display.blit(self.fundo, (0, 0))
+        self.gerenciador.draw()
         self.obstaculos.draw(self.display)
         if len(self.eventos) > 0:
             for evento in self.eventos:
@@ -160,42 +186,56 @@ class jogo(ABC):
         '''
         Método que checa todas as colisões que podem ocorrer
         '''
-        # Colisão dos tiros
-            # Com obstáculos
-            # ...
-            # Com eventos
-            # ...
-            # Com players
-            # ...
-            # Com inimigos
-            # ...
-        # Colisão dos obstáculos
         for bloco in self.obstaculos:
-            # Com eventos
             for evento in self.eventos:
-                destruir = bloco.verificar_colisao(evento, 5)
-                if destruir:
+                colidiu = bloco.verificar_colisao(evento, 5)
+                if colidiu:
                     self.obstaculos.remove(bloco)
-            # Com players
-            # ...
-            # Com inimigos
-            # ...
-        # Colisão eventos
-            # Com players
-            # ...
-            # Com inimigos
-            # ...
-        # Colisão players
-            # Com inimigos
-            # ...
+        self.colisoes_tiros()
+        self.colisoes_inimigos()
+        self.colisoes_players()
+        # Blocos e eventos com tiros
+        # Blocos e eventos com players e inimigos
         
-    def gerar_inimigos(self):
-        '''
-        Método destinado a geração de inimigos.
-        '''
-        # Implementar geração de inimigos
-        # ...
-        pass
+    def colisoes_tiros(self):
+        tiros = list()
+        for inimigo in self.gerenciador.inimigos:
+            tiros += inimigo.tiros
+        for player in [self.gerenciador.v1, self.gerenciador.v2]:
+            tiros += player.tiros
+        for tiro in tiros:
+            tiro_rect = pygame.Rect(tiro.x - tiro.raio, tiro.y - tiro.raio, 2 * tiro.raio, 2 * tiro.raio)
+            colidiu = False
+            for bloco in self.obstaculos:
+                if tiro_rect.colliderect(bloco):
+                    tiro.ativo = False
+                    self.obstaculos.remove(bloco)
+                    colidiu = True
+                    break
+            for evento in self.eventos:
+                colidiu = evento.verificar_colisao(tiro_rect, tiro.dano_tiro)
+                if colidiu:
+                    tiro.ativo = False
+        
+    def colisoes_inimigos(self):
+        for inimigo in self.gerenciador.inimigos:
+            for bloco in self.obstaculos:
+                colidiu = bloco.verificar_colisao(inimigo.rect, inimigo.dano)
+                if colidiu:
+                    inimigo.integridade -= bloco.dano
+                if bloco.vida <= 0:
+                    self.obstaculos.remove(bloco)
+
+    def colisoes_players(self):
+        for player in [self.gerenciador.v1, self.gerenciador.v2]:
+            for bloco in self.obstaculos:
+                rect = pygame.Rect(player.x, player.y, player.tamanho_veiculo, player.tamanho_veiculo)
+                colidiu = bloco.verificar_colisao(rect, player.dano)
+                (player.x, player.y) = rect.topleft
+                if colidiu:
+                    player.integridade -= bloco.dano
+                if bloco.vida <= 0:
+                    self.obstaculos.remove(bloco)
 
     def criar_obstaculos(self, vida, cor = (0, 0, 0), nome = None, alcance = 0):
         '''
@@ -239,22 +279,6 @@ class jogo(ABC):
                     else:
                         bloco = obstaculo(esquerda, topo, self.largura_blocos, self.altura_blocos, vida, cor, nome)
                         self.obstaculos.add(bloco)
-
-    def movimento_players(self, evento : pygame.key):
-        '''
-        Método destinado a implementação do movimento dos jogadores
-
-        Parâmetros
-        ----------
-        evento: pygame.key
-
-            Tecla pressionada
-        '''
-        # Movimento player_1
-        # ...
-        # Movimento player_2
-        # ...
-        pass
 
     @abstractmethod
     def gerar_eventos(self):
@@ -338,12 +362,12 @@ class oceano(jogo):
         self.largura_blocos = self.largura // self.tamanho_mapa[0]
         self.altura_blocos = self.altura // self.tamanho_mapa[1]
         nome_obstaculo = "../assets/sprites/bloco_oceano_{0}.png"
-        self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
+        self.criar_obstaculos(10, nome = nome_obstaculo, alcance = 4)
         self.fundo_atual = 1
         self.chances = {
-            'tubarao': 0.3,
-            'caranguejo': 0.3,
-            'bando_aguas_vivas': 0.4
+            'tubarao': 0.2,
+            'caranguejo': 0.2,
+            'bando_aguas_vivas': 0.3
         }
 
     def atualizar(self):
@@ -431,11 +455,11 @@ class deserto(jogo):
         self.altura_blocos = altura // self.tamanho_mapa[1]
         self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_deserto_{0}.png"
-        self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
+        self.criar_obstaculos(10, nome = nome_obstaculo, alcance = 4)
         self.fundo_atual = 1
         self.chances = {
-            "bola_de_feno" : 0.4,
-            "verme_da_areia" : 0.3,
+            "bola_de_feno" : 0.3,
+            "verme_da_areia" : 0.2,
             "nuvem_gafanhotos" : 0.3
         }
     
@@ -522,10 +546,10 @@ class espaco(jogo):
         self.altura_blocos = altura // self.tamanho_mapa[1]
         self.obstaculos = pygame.sprite.Group()
         nome_obstaculo = "../assets/sprites/bloco_espaco_{0}.png"
-        self.criar_obstaculos(100, nome = nome_obstaculo, alcance = 4)
+        self.criar_obstaculos(10, nome = nome_obstaculo, alcance = 4)
         self.fundo_atual = 1
         self.chances = {
-            "cometa" : 0.4,
+            "cometa" : 0.2,
             "space" : 0.3
         }
 
@@ -620,8 +644,10 @@ class obstaculo(pygame.sprite.Sprite):
             self.image = pygame.image.load(nome)
             self.image = pygame.transform.scale(self.image, (largura, altura))
             self.rect = self.image.get_rect(topleft = (x, y))
+        self.largura_tela = pygame.display.get_surface().get_width()
+        self.altura_tela = pygame.display.get_surface().get_height()
         self.vida = vida
-        self.dano = 5
+        self.dano = 1
         self.contador_dano = 0
         self.separador_dano = 500
 
@@ -630,35 +656,25 @@ class obstaculo(pygame.sprite.Sprite):
             return objeto.verificar_colisao(self.rect, self.dano)
         elif isinstance(objeto, pygame.Rect):
             if self.rect.colliderect(objeto):
-                if objeto.top <= self.rect.bottom:
-                    if objeto.left > self.rect.right or objeto.right < self.rect.left:
-                        pass
-                    else:
-                        objeto.top = min(objeto.top, self.rect.bottom)
-                if objeto.bottom >= self.rect.top:
-                    if objeto.left > self.rect.right or objeto.right < self.rect.left:
-                        pass
-                    else:
-                        objeto.bottom = self.rect.top
-                if objeto.left <= self.rect.right:
-                    if objeto.top > self.rect.bottom or objeto.bottom < self.rect.top:
-                        pass
-                    else:
-                        objeto.left = self.rect.right
-                if objeto.right >= self.rect.left:
-                    if objeto.top > self.rect.bottom or objeto.bottom < self.rect.top:
-                        pass
-                    else:
-                        objeto.right = self.rect.left
-                if pygame.time.get_ticks() - self.contador_dano > self.separador_dano:
-                    self.vida -= dano
-                    self.contador_dano = pygame.time.get_ticks()
-                if self.vida <= 0:
-                    return True
-                return False
+                # Ajusta a posição do inimigo para longe do veiculo
+                if objeto.x < self.rect.x:
+                    objeto.x -= 10
+                elif objeto.x > self.rect.x:
+                    objeto.x += 10
+                    
+                if objeto.y < self.rect.y:
+                    objeto.y -= 10
+                elif objeto.y > self.rect.y:
+                    objeto.y += 10
+                self.vida -= dano
+
+                objeto.y = max(0, min(objeto.top, self.altura_tela - objeto.height))
+                objeto.x = max(0, min(objeto.left, self.largura_tela - objeto.width))
+                return True
         else:
             # Objeto tem que possuir atributos rect e dano
             return self.verificar_colisao(objeto.rect, objeto.dano)
+        return False
             
 mapa_oceano = [
     [" "," "," "," "," "," "," "," "," "," "," ","x","x","x","x","x","x","x"," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],

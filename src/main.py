@@ -189,8 +189,6 @@ class GerenciadorTelas:
                         self.tela_pause.pos_botao = 0
                         self.pausado = not self.pausado
 
-                self.tela.movimento_players(teclas_pressionadas)
-
                 if not self.pausado:
                     self.tela.atualizar()
                     self.atualizar_display()
