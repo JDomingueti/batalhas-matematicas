@@ -106,16 +106,21 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         '''
         super().__init__() 
         self.tamanho = tamanho
-        self.image = pygame.image.load(path_image)
-        self.image = pygame.transform.scale(self.image, (self.tamanho, self.tamanho))  
+        self.image_padrao = pygame.image.load(path_image)
+        self.image_padrao = pygame.transform.scale(self.image_padrao, (self.tamanho, self.tamanho))
+        self.image = self.image_padrao
         self.rect = self.image.get_rect()  
         self.rect.x = x
         self.rect.y = 50
         self.largura_tela = largura_tela
         self.altura_tela = altura_tela
+        self.velocidade_padrao = 2
         self.velocidade = 2
-        self.velocidade_vertical = 2
-        self.velocidade_horizontal = 3
+        self.intervalo_velocidade = 1000
+        self.recuperar_velocidade = 0
+        self.parado = False
+        # self.velocidade_vertical = 2
+        # self.velocidade_horizontal = 3
         self.ultimo_tempo_colisao = pygame.time.get_ticks()
         self.angulo = 0
         self.dano = 5
@@ -123,6 +128,9 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         self.ultimo_disparo = 0
         self.intervalo_tiro = 5 # 5 segundos
         self.limite_distancia = 200
+        self.levou_dano = False
+        self.intervalo_dano = 500
+        self.separador_dano = 0
         self.integridade = 10
         self.powerup_image = powerup_image
         self.powerup_efeito = powerup_efeito
@@ -136,7 +144,13 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         veiculos: list
             Lista contendo o veiculo 1 (v1) e o veículo 2 (v2) 
         '''
-        veiculo_proximo = min(veiculos, key=lambda veiculo: pygame.Vector2(veiculo.x, veiculo.y).distance_to(self.rect.center))
+        if self.velocidade == 0 and not self.parado:
+            self.parado = True
+            self.recuperar_velocidade = pygame.time.get_ticks()
+        elif self.parado and pygame.time.get_ticks() - self.recuperar_velocidade > self.intervalo_velocidade:
+            self.velocidade = self.velocidade_padrao
+            self.parado = False
+        veiculo_proximo = min(veiculos, key=lambda veiculo: pygame.Vector2(veiculo.rect.x, veiculo.rect.y).distance_to(self.rect.center))
         direcao = pygame.Vector2(veiculo_proximo.x - self.rect.x, veiculo_proximo.y - self.rect.y)
         distancia_ate_veiculo = direcao.length()
 
@@ -185,7 +199,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         surface.blit(image_rotacionada, novo_retangulo)
         for tiro in self.tiros:
             tiro.draw(surface)
-
+    
     def atualizar_tiros(self):
         '''
         Função que atualiza os tiros.
@@ -220,6 +234,15 @@ class Inimigo(pygame.sprite.Sprite, ABC):
                 return True  # Remove o inimigo da lista
         return False
 
+    def levar_dano(self, dano):
+        if not(self.levou_dano):
+            image_dano = pygame.Surface.convert_alpha(self.image)
+            image_dano.set_alpha(155)
+            self.image = image_dano
+            self.integridade -= dano
+            self.levou_dano = True
+            self.separador_dano = pygame.time.get_ticks()
+
     @abstractmethod
     def update(self, tiros, veiculos, powerups):
         '''
@@ -236,6 +259,12 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         powerups: Surface
             Sprites dos powerups
         '''
+        if self.levou_dano:
+            tmp = pygame.time.get_ticks() - self.separador_dano
+            if  tmp > 50 and tmp < 100:
+                self.image = self.image_padrao
+            elif tmp > self.intervalo_dano:
+                self.levou_dano = False
         self.perseguir_veiculo(veiculos)
         self.disparar(veiculos) 
         self.atualizar_tiros()
