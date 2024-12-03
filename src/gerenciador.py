@@ -57,8 +57,8 @@ class Gerenciador:
             'disparo': pygame.K_SEMICOLON
         }
         
-        self.v1 = Veiculo(v1_img, 20, (self.altura_tela - self.tamanho) // 2, self.largura_tela, self.altura_tela, self.tamanho, controles_v1)  
-        self.v2 = Veiculo(v2_img, self.largura_tela - self.tamanho - 20, (self.altura_tela - self.tamanho) // 2, self.largura_tela, self.altura_tela, self.tamanho, controles_v2, True)
+        self.v1 = Veiculo(v1_img, 20, (self.altura_tela - self.tamanho_veiculo) // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo, controles_v1)  
+        self.v2 = Veiculo(v2_img, self.largura_tela - self.tamanho_veiculo - 20, (self.altura_tela - self.tamanho_veiculo) // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo, controles_v2, True)
         self.veiculos = [
             self.v1,
             self.v2,
@@ -100,21 +100,23 @@ class Gerenciador:
             # Colisão do tiro com o jogador
             if objeto.x <= tiro.x <= objeto.x + objeto.tamanho \
                 and objeto.y <= tiro.y <= objeto.y + objeto.tamanho:
-                objeto.integridade -= tiro.dano_tiro  # Dano fixo por tiro
+                # objeto.integridade -= tiro.dano_tiro  # Dano fixo por tiro
+                objeto.levar_dano(tiro.dano_tiro)  # Dano fixo por tiro
                 tiro.ativo = False
         
         if isinstance(objeto, Inimigo):
             #Colisão do tiro com o inimigo
             if objeto.rect.x <= tiro.x <= objeto.rect.x + objeto.tamanho \
                 and objeto.rect.y <= tiro.y <= objeto.rect.y + objeto.tamanho:
-                objeto.integridade -= tiro.dano_tiro  # Dano fixo por tiro
+                objeto.levar_dano(tiro.dano_tir) # Dano fixo por tiro
+                # objeto.integridade -= tiro.dano_tiro  # Dano fixo por tiro
                 tiro.ativo = False
 
     def verificar_colisoes_powerups(self):
         for powerup in self.powerups[:]:
             for veiculo in self.veiculos:
-                veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho, veiculo.tamanho)
-                if powerup.rect.colliderect(veiculo_rect):
+                # veiculo_rect = pygame.Rect(veiculo.rect.x, veiculo.rect.y, veiculo.tamanho, veiculo.tamanho)
+                if powerup.rect.colliderect(veiculo.rect):
                     powerup.aplicar_efeito(veiculo) 
                     self.powerups.remove(powerup)
 
@@ -127,69 +129,73 @@ class Gerenciador:
                     inimigo1.rect.y -= 2  
                     inimigo2.rect.x += 5
                     inimigo2.rect.y += 2
-                    
-                    inimigo1.velocidade_horizontal *= -1
-                    inimigo2.velocidade_horizontal *= -1
+                    inimigo1.velocidade = inimigo2.velocidade = 0
+                    # inimigo1.velocidade_horizontal *= -1
+                    # inimigo2.velocidade_horizontal *= -1
 
                     # Limita os inimigos aos limites da tela
-                    inimigo1.rect.x = max(0, min(self.largura_tela - self.tamanho, inimigo1.rect.x))
-                    inimigo1.rect.y = max(0, min(self.altura_tela - self.tamanho, inimigo1.rect.y))
-                    inimigo2.rect.x = max(0, min(self.largura_tela - self.tamanho, inimigo2.rect.x))
-                    inimigo2.rect.y = max(0, min(self.altura_tela - self.tamanho, inimigo2.rect.y))
+                    inimigo1.rect.x = max(0, min(self.largura_tela - self.tamanho_veiculo, inimigo1.rect.x))
+                    inimigo1.rect.y = max(0, min(self.altura_tela - self.tamanho_veiculo, inimigo1.rect.y))
+                    inimigo2.rect.x = max(0, min(self.largura_tela - self.tamanho_veiculo, inimigo2.rect.x))
+                    inimigo2.rect.y = max(0, min(self.altura_tela - self.tamanho_veiculo, inimigo2.rect.y))
 
     def verificar_colisoes_entre_veiculos_e_inimigos(self):
         tempo_atual = pygame.time.get_ticks()
         for inimigo in self.inimigos:
             for veiculo in self.veiculos:
-                veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho, veiculo.tamanho)
-                if inimigo.rect.colliderect(veiculo_rect):
+                # veiculo_rect = pygame.Rect(veiculo.rect.x, veiculo.rect.y, veiculo.tamanho, veiculo.tamanho)
+                if inimigo.rect.colliderect(veiculo.rect):
                     if tempo_atual - inimigo.ultimo_tempo_colisao > 10:
-                        veiculo.integridade -= 1
+                        veiculo.levar_dano(1)
+                        # veiculo.integridade -= 1
                         inimigo.ultimo_tempo_colisao = tempo_atual
 
                         # Ajusta a posição do inimigo para longe do veiculo
-                        if inimigo.rect.x < veiculo.x:
+                        if inimigo.rect.x < veiculo.rect.x:
                             inimigo.rect.x -= 10  # Move para a esquerda
-                            veiculo.x = min(self.largura_tela - veiculo.tamanho, veiculo.x + 5)
-                        elif inimigo.rect.x > veiculo.x:
+                            veiculo.rect.x = min(self.largura_tela - veiculo.tamanho, veiculo.rect.x + 5)
+                        elif inimigo.rect.x > veiculo.rect.x:
                             inimigo.rect.x += 10  # Move para a direita
-                            veiculo.x = max(0, veiculo.x - 5)
+                            veiculo.rect.x = max(0, veiculo.rect.x - 5)
 
-                        if inimigo.rect.y < veiculo.y:
+                        if inimigo.rect.y < veiculo.rect.y:
                             inimigo.rect.y -= 10  # Move para cima
-                            veiculo.y = min(self.altura_tela - veiculo.tamanho, veiculo.y + 5)
-                        elif inimigo.rect.y > veiculo.y:
+                            veiculo.rect.y = min(self.altura_tela - veiculo.tamanho, veiculo.rect.y + 5)
+                        elif inimigo.rect.y > veiculo.rect.y:
                             inimigo.rect.y += 10  # Move para baixo
-                            veiculo.y = max(self.limite_superior, veiculo.y - 5)
+                            veiculo.rect.y = max(self.limite_superior, veiculo.rect.y - 5)
 
                         # Inverte a direção
-                        inimigo.velocidade_horizontal *= -1
-                        inimigo.velocidade_vertical *= -1
+                        # inimigo.velocidade_horizontal *= -1
+                        # inimigo.velocidade_vertical *= -1
 
                         # Limita o inimigo aos limites da tela
                         inimigo.rect.x = max(0, min(self.largura_tela - inimigo.tamanho, inimigo.rect.x))
                         inimigo.rect.y = max(self.limite_superior, min(self.altura_tela - inimigo.tamanho, inimigo.rect.y))
-                        veiculo.x = max(0, min(self.largura_tela - veiculo.tamanho, veiculo.x))
-                        veiculo.y = max(self.limite_superior, min(self.altura_tela - veiculo.tamanho, veiculo.y))
+                        veiculo.rect.x = max(0, min(self.largura_tela - veiculo.tamanho, veiculo.rect.x))
+                        veiculo.rect.y = max(self.limite_superior, min(self.altura_tela - veiculo.tamanho, veiculo.rect.y))
 
     def verificar_colisoes_entre_veiculos(self):
-        if pygame.Rect(self.v1.x, self.v1.y, self.v1.tamanho, self.v1.tamanho).colliderect(
-                pygame.Rect(self.v2.x, self.v2.y, self.v2.tamanho, self.v2.tamanho)):
-            self.v1.integridade -= 1 
-            self.v2.integridade -= 1
+        # if pygame.Rect(self.v1.x, self.v1.y, self.v1.tamanho, self.v1.tamanho).colliderect(
+        #         pygame.Rect(self.v2.x, self.v2.y, self.v2.tamanho, self.v2.tamanho)):
+        if self.v1.rect.colliderect(self.v2.rect):
+            self.v1.levar_dano(1)
+            # self.v1.integridade -= 1 
+            self.v2.levar_dano(1)
+            # self.v2.integridade -= 1
 
-            if self.v1.x < self.v2.x:
-                self.v1.x = max(0, self.v1.x - 5)
-                self.v2.x = min(self.largura_tela - self.v2.tamanho, self.v2.x + 5)
+            if self.v1.rect.x < self.v2.rect.x:
+                self.v1.rect.x = max(0, self.v1.rect.x - 5)
+                self.v2.rect.x = min(self.largura_tela - self.v2.tamanho, self.v2.rect.x + 5)
             else:
-                self.v1.x = min(self.largura_tela - self.v1.tamanho, self.v1.x + 5)
-                self.v2.x = max(0, self.v2.x - 5)
-            if self.v1.y < self.v2.y:
-                self.v1.y = max(self.limite_superior, self.v1.y - 5)
-                self.v2.y = min(self.altura_tela - self.v2.tamanho, self.v2.y + 5)
+                self.v1.rect.x = min(self.largura_tela - self.v1.tamanho, self.v1.rect.x + 5)
+                self.v2.rect.x = max(0, self.v2.rect.x - 5)
+            if self.v1.rect.y < self.v2.rect.y:
+                self.v1.rect.y = max(self.limite_superior, self.v1.rect.y - 5)
+                self.v2.rect.y = min(self.altura_tela - self.v2.tamanho, self.v2.rect.y + 5)
             else:
-                self.v1.y = min(self.altura_tela - self.v1.tamanho, self.v1.y + 5)
-                self.v2.y = max(self.limite_superior, self.v2.y - 5)
+                self.v1.rect.y = min(self.altura_tela - self.v1.tamanho, self.v1.rect.y + 5)
+                self.v2.rect.y = max(self.limite_superior, self.v2.rect.y - 5)
 
     def colisoes_dos_tiros(self):
 

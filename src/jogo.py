@@ -126,15 +126,14 @@ class jogo(ABC):
         #   self.configuracoes = json.load(config_file)
 
     def gerenciador_naves(self):
-        if len(self.gerenciador.inimigos) < self.gerenciador.max_inimigos and pygame.time.get_ticks() - self.gerenciador.timer_inimigos > 20000:
-            if self.idx_inimigos:
+        if len(self.gerenciador.inimigos) < self.gerenciador.max_inimigos and pygame.time.get_ticks() - self.gerenciador.timer_inimigos > 5000:
+            if len(self.idx_inimigos) != 0:
                 idx = random.choice(self.idx_inimigos)
                 self.gerenciador.criar_inimigos(idx, self.gerenciador.largura_tela // 2, self.gerenciador.largura_tela, self.gerenciador.altura_tela, self.gerenciador.tamanho_veiculo)
                 self.idx_inimigos.remove(idx)
                 self.gerenciador.timer_inimigos = pygame.time.get_ticks()
-
-        if len(self.idx_inimigos) == 0:
-            self.idx_inimigos = [1, 2, 3, 4]
+            else:
+                self.idx_inimigos = [1, 2, 3, 4]
 
         # Checar a tecla de disparo
         keys = pygame.key.get_pressed()
@@ -175,8 +174,8 @@ class jogo(ABC):
         self.display
         '''
         self.display.blit(self.fundo, (0, 0))
-        self.gerenciador.draw()
         self.obstaculos.draw(self.display)
+        self.gerenciador.draw()
         if len(self.eventos) > 0:
             for evento in self.eventos:
                 evento.desenhar()
@@ -220,20 +219,18 @@ class jogo(ABC):
     def colisoes_inimigos(self):
         for inimigo in self.gerenciador.inimigos:
             for bloco in self.obstaculos:
-                colidiu = bloco.verificar_colisao(inimigo.rect, inimigo.dano)
+                colidiu = bloco.verificar_colisao(inimigo, inimigo.dano)
                 if colidiu:
-                    inimigo.integridade -= bloco.dano
+                    inimigo.levar_dano(bloco.dano)
                 if bloco.vida <= 0:
                     self.obstaculos.remove(bloco)
 
     def colisoes_players(self):
         for player in [self.gerenciador.v1, self.gerenciador.v2]:
             for bloco in self.obstaculos:
-                rect = pygame.Rect(player.x, player.y, player.tamanho_veiculo, player.tamanho_veiculo)
-                colidiu = bloco.verificar_colisao(rect, player.dano)
-                (player.x, player.y) = rect.topleft
+                colidiu = bloco.verificar_colisao(player, player.dano)
                 if colidiu:
-                    player.integridade -= bloco.dano
+                    player.levar_dano(bloco.dano)
                 if bloco.vida <= 0:
                     self.obstaculos.remove(bloco)
 
@@ -646,34 +643,33 @@ class obstaculo(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(topleft = (x, y))
         self.largura_tela = pygame.display.get_surface().get_width()
         self.altura_tela = pygame.display.get_surface().get_height()
+        self.largura = largura
+        self.altura = altura
         self.vida = vida
         self.dano = 1
         self.contador_dano = 0
         self.separador_dano = 500
 
-    def verificar_colisao(self, objeto : evento.evento | pygame.Rect, dano : int = 0):
+    def verificar_colisao(self, objeto, dano : int = 0):
         if isinstance(objeto, evento.evento):
             return objeto.verificar_colisao(self.rect, self.dano)
-        elif isinstance(objeto, pygame.Rect):
-            if self.rect.colliderect(objeto):
-                # Ajusta a posição do inimigo para longe do veiculo
-                if objeto.x < self.rect.x:
-                    objeto.x -= 10
-                elif objeto.x > self.rect.x:
-                    objeto.x += 10
-                    
-                if objeto.y < self.rect.y:
-                    objeto.y -= 10
-                elif objeto.y > self.rect.y:
-                    objeto.y += 10
-                self.vida -= dano
-
-                objeto.y = max(0, min(objeto.top, self.altura_tela - objeto.height))
-                objeto.x = max(0, min(objeto.left, self.largura_tela - objeto.width))
-                return True
         else:
-            # Objeto tem que possuir atributos rect e dano
-            return self.verificar_colisao(objeto.rect, objeto.dano)
+            if self.rect.colliderect(objeto.rect):
+                if objeto.rect.x < self.rect.x:
+                    objeto.rect.x -= 10
+                elif objeto.rect.x > self.rect.x:
+                    objeto.rect.x += 10
+                    
+                if objeto.rect.y < self.rect.y:
+                    objeto.rect.y -= 10
+                elif objeto.rect.y > self.rect.y:
+                    objeto.rect.y += 10
+                objeto.velocidade = 0
+                # self.vida -= dano
+
+                objeto.rect.y = max(0, min(objeto.rect.y, self.altura_tela - objeto.tamanho))
+                objeto.rect.x = max(0, min(objeto.rect.x, self.largura_tela - objeto.tamanho))
+                return True
         return False
             
 mapa_oceano = [

@@ -171,6 +171,7 @@ class GerenciadorTelas:
                             self.tela.mover_no_teclado(item)
 
                 self.tela.atualizar()
+                self.atualizar_display()
                 self.tela.desenhar()
             
             else:
@@ -191,7 +192,6 @@ class GerenciadorTelas:
 
                 if not self.pausado:
                     self.tela.atualizar()
-                    self.atualizar_display()
                     self.tela.desenhar()
                 else:
                     teclado = [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT,pygame.K_RETURN]
@@ -201,7 +201,6 @@ class GerenciadorTelas:
                                 tempo_press = pygame.time.get_ticks()
                                 self.tela_pause.mover_no_teclado(item)
                     self.tela_pause.atualizar()
-                    self.atualizar_display()
                     self.tela.desenhar()
                     self.tela_pause.desenhar()
             pygame.display.flip()
