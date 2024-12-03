@@ -86,6 +86,7 @@ class PowerUp:
             veiculo.integridade = min(100, veiculo.integridade + 20)
         elif self.efeito == "tiro":
             veiculo.velocidade_tiro += 5
+            veiculo.intervalo_tiro -= 0.05
         elif self.efeito == "dano":
             veiculo.dano += 1
 

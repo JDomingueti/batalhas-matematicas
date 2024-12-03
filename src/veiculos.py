@@ -12,7 +12,7 @@ class Veiculo:
     Classe criada com as configurações gerais dos
     veículos que serão controlados pelos jogadores.
     '''
-    def __init__(self, caminho_imagem, x, y, largura_tela, altura_tela, tamanho, teclas, tiro_inverso=False):
+    def __init__(self, caminho_imagem, x, y, largura_tela, altura_tela, tamanho, teclas, tiro_inverso = False, volume_tiro = 1):
         
         '''
         Método que carrega e ajusta as configurações iniciais 
@@ -87,10 +87,12 @@ class Veiculo:
         self.imagem_padrao = pygame.image.load(self.caminho_imagem) #carregando imagem
         self.imagem_padrao = pygame.transform.scale(self.imagem_padrao, (self.tamanho, self.tamanho)) # mudando escala
         self.imagem = self.imagem_padrao
-
+        self.ativo = True
         self.integridade = 100
         self.levou_dano = False
-        self.intervalo_dano = 500
+        self.intervalo_dano = 100
+        self.som_tiro = pygame.mixer.Sound("../assets/veiculos/laser_pl.mp3")
+        self.volume_tiro = volume_tiro
         self.separador_dano = 0
         self.velocidade_padrao = 10
         self.velocidade = 10
@@ -104,7 +106,7 @@ class Veiculo:
         self.parou = False
 
 
-    def processar_movimento(self, keys, is_v1=True):
+    def processar_movimento(self, keys):
         '''
         Método para processar o movimento do veículo
 
@@ -130,8 +132,10 @@ class Veiculo:
                 self.imagem = self.imagem_padrao
             elif tmp > self.intervalo_dano:
                 self.levou_dano = False
+        if not self.ativo:
+            return
         (self.x, self.y) = self.rect.topleft
-        keys = pygame.key.get_pressed()
+        # keys = pygame.key.get_pressed()
         # variação da posição conforme as teclas são apertadas
         dx, dy = 0, 0
         
@@ -186,7 +190,9 @@ class Veiculo:
             angulo_tiro  = self.angulo
             if self.tiro_inverso:
                 angulo_tiro += 180
-            novo_tiro = Tiro(centro_x, centro_y, angulo_tiro, self.velocidade_tiro)
+            self.som_tiro.play()
+            self.som_tiro.set_volume(self.volume_tiro)
+            novo_tiro = Tiro(centro_x, centro_y, angulo_tiro, self.velocidade_tiro, raio = self.tamanho//15)
             self.tiros.append(novo_tiro)
             self.ultimo_disparo = tempo_atual
 
@@ -201,18 +207,17 @@ class Veiculo:
         '''
         imagem_rotacionada = pygame.transform.rotate(self.imagem, self.angulo) # rotacionando imagem
         novo_retangulo = imagem_rotacionada.get_rect(center=(self.rect.x + self.tamanho / 2, self.rect.y + self.tamanho / 2))
-        surface.blit(imagem_rotacionada, novo_retangulo.topleft)
-        
         # Desenha os tiros
         for tiro in self.tiros:
             tiro.draw(surface)
+        surface.blit(imagem_rotacionada, novo_retangulo.topleft)
 
     def levar_dano(self, dano):
-        if not(self.levou_dano):
+        if not(self.levou_dano) and self.ativo:
             imagem_dano = pygame.Surface.convert_alpha(self.imagem)
             imagem_dano.set_alpha(155)
             self.imagem = imagem_dano
-            self.integridade -= dano
+            self.integridade = max(self.integridade - dano, 0)
             self.levou_dano = True
             self.separador_dano = pygame.time.get_ticks()
 
@@ -237,7 +242,7 @@ class Veiculo:
         posicao_texto: List[float]
             Em que posição o texto será desenhado
         '''
-        fonte = pygame.font.Font(None, 36)
+        fonte = pygame.font.Font(None, self.altura_tela//17)
         texto = fonte.render(f"Integridade: {self.integridade:,.2f}", True, (0, 0, 0))
         rect = texto.get_rect()
         sfc = pygame.Surface((rect.width, rect.height))

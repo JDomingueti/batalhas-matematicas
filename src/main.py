@@ -295,11 +295,12 @@ class GerenciadorTelas:
                 if not self.pausado:
                     self.volume_efeitos = self.tela.pegar_vol_efeitos()
                     self.tela.atualizar_vol_efeitos(self.volume_efeitos)
-                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
                 else:
                     self.volume_efeitos = self.tela_pause.pegar_vol_efeitos()
                     self.tela.volume_efeitos = self.volume_efeitos
-                    self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
+                self.tela_pause.atualizar_vol_efeitos(self.volume_efeitos)
+                if self.estado == 'jogando':
+                    self.tela.gerenciador.atualizar_efeitos(self.volume_efeitos)
             case 'musica':
                 if not self.pausado:
                     self.volume_musica = self.tela.pegar_vol_musica()

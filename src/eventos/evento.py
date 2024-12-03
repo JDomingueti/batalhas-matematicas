@@ -71,7 +71,9 @@ class evento(ABC):
         self.lado_inicio = random.choice([-1,1])
         self.contador = pygame.time.get_ticks()
         self.caminho = "../assets/eventos/"
-
+        self.intervalo_dano = 200
+        self.separador_dano = 0
+        
     def aviso_direcao(self):
         '''
         Gera o aviso na tela que um evento foi inicializado e a posição

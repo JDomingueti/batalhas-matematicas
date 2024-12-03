@@ -1,0 +1,93 @@
+
+{
+    "tela": {
+        "altura": 600,
+        "largura": 800
+    },
+    "som": {
+        "efeitos": 0,
+        "musica": 0
+    },
+    "cenarios":{
+        "oceano":{
+            "fundo":"../assets/fundos/oceano_{0}.png",
+            "blocos":"../assets/sprites/bloco_oceano_{0}.png",
+            "pl_1": {
+                "img":"../assets/veiculos/submarino2.png",
+                "dano": 10,
+                "integridade": 100,
+                "velo": 10
+            },
+            "pl_2": {
+                "img":"../assets/veiculos/submarino1.png",
+                "dano": 10,
+                "integridade": 100,
+                "velo": 10
+            },
+            "in_1": "../assets/inimigos/inimigo1_oceano.png",
+            "in_2": "../assets/inimigos/inimigo2_oceano.png",
+            "in_3": "../assets/inimigos/inimigo3_oceano.png",
+            "in_4": "../assets/inimigos/inimigo4_oceano.png",
+            "chances_eventos": {
+                "tubarao": 0.3,
+                "caranguejo": 0.3,
+                "bando_aguas_vivas": 0.4
+            }
+        },
+        "deserto":{
+            "fundo":"../assets/fundos/deserto_{0}.png",
+            "blocos":"../assets/sprites/bloco_deserto_{0}.png",
+            "pl_1": {
+                "img":"../assets/veiculos/jato1.png",
+                "dano": 10,
+                "integridade": 100,
+                "velo": 10
+            },
+            "pl_2": {
+                "img":"../assets/veiculos/jato3.png",
+                "dano": 10,
+                "integridade": 100,
+                "velo": 10
+            },
+            "in_1": "../assets/inimigos/inimigo1_deserto.png",
+            "in_2": "../assets/inimigos/inimigo2_deserto.png",
+            "in_3": "../assets/inimigos/inimigo3_deserto.png",
+            "in_4": "../assets/inimigos/inimigo4_deserto.png",
+            "chances_eventos": {
+                "bola_de_feno" : 0.4,
+                "verme_da_areia" : 0.3,
+                "nuvem_gafanhotos" : 0.3
+            }
+        },
+        "espaco":{
+            "fundo":"../assets/fundos/espaco_{0}.png",
+            "blocos":"../assets/sprites/bloco_espaco_{0}.png",
+            "pl_1": {
+                "img":"../assets/veiculos/foguete2.png",
+                "dano": 10,
+                "integridade": 100,
+                "velo": 10
+            },
+            "pl_2": {
+                "img":"../assets/veiculos/foguete4.png",
+                "dano": 10,
+                "integridade": 100,
+                "velo": 10
+            },
+            "in_1": "../assets/inimigos/inimigo1_espaço.png",
+            "in_2": "../assets/inimigos/inimigo2_espaço.png",
+            "in_3": "../assets/inimigos/inimigo3_espaço.png",
+            "in_4": "../assets/inimigos/inimigo4_espaço.png",
+            "chances_eventos": {
+                "cometa" : 0.4,
+                "space" : 0.3
+            }
+        },
+        "powerups":{
+            "vida": "../assets/poderes/vida.png",
+            "velocidade": "../assets/poderes/velocidade.png",
+            "bala": "../assets/poderes/bala.png",
+            "dano": "../assets/poderes/dano.png"
+        }
+    }
+}

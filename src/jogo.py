@@ -1,4 +1,4 @@
-import pygame, random #, json
+import pygame, random , json
 from typing import List
 from abc import ABC, abstractmethod
 from eventos import evento, eventos_oceano, eventos_deserto, eventos_espaco
@@ -118,15 +118,17 @@ class jogo(ABC):
         self.eventos : List[evento.evento]= []
         self.obstaculos : List[obstaculo] = pygame.sprite.Group()
         self.contador_eventos = 0
-        self.separador_eventos = 30000
+        self.separador_eventos = 20000
+        self.separador_inimigos = 10000
         self.frame_atual = 0
-        self.gerenciador = gerenciador.Gerenciador(self.largura, self.altura, self.display)
+        # CADA CENARIO DEVE INICIALIZAR O GERENCIADOR
+        # self.gerenciador = gerenciador.Gerenciador(...)
         self.idx_inimigos = [1, 2, 3, 4]
-        # with open("...", "r", encoding="utf-8") as config_file:
-        #   self.configuracoes = json.load(config_file)
-
+        with open("configuracoes.json", "r", encoding="utf-8") as config_file:
+            self.configuracoes = json.load(config_file)
+            
     def gerenciador_naves(self):
-        if len(self.gerenciador.inimigos) < self.gerenciador.max_inimigos and pygame.time.get_ticks() - self.gerenciador.timer_inimigos > 5000:
+        if len(self.gerenciador.inimigos) < self.gerenciador.max_inimigos and pygame.time.get_ticks() - self.gerenciador.timer_inimigos > self.separador_inimigos:
             if len(self.idx_inimigos) != 0:
                 idx = random.choice(self.idx_inimigos)
                 self.gerenciador.criar_inimigos(idx, self.gerenciador.largura_tela // 2, self.gerenciador.largura_tela, self.gerenciador.altura_tela, self.gerenciador.tamanho_veiculo)
@@ -136,7 +138,6 @@ class jogo(ABC):
                 self.idx_inimigos = [1, 2, 3, 4]
 
         # Checar a tecla de disparo
-        keys = pygame.key.get_pressed()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_b]:
             self.gerenciador.v1.disparar()
@@ -148,7 +149,9 @@ class jogo(ABC):
         self.gerenciador.v1.atualizar_tiros()
         self.gerenciador.v2.atualizar_tiros()
 
-        self.gerenciador.update()
+        rect = self.gerenciador.update(keys)
+        if rect != None:
+            self.explodir(rect)
 
     def atualizar(self):
         '''
@@ -180,23 +183,23 @@ class jogo(ABC):
             for evento in self.eventos:
                 evento.desenhar()
 
-    # @abstractmethod
     def checar_colisoes(self):
         '''
         Método que checa todas as colisões que podem ocorrer
         '''
         for bloco in self.obstaculos:
             for evento in self.eventos:
-                colidiu = bloco.verificar_colisao(evento, 5)
+                colidiu = bloco.verificar_colisao(evento, 1)
                 if colidiu:
                     self.obstaculos.remove(bloco)
         self.colisoes_tiros()
         self.colisoes_inimigos()
         self.colisoes_players()
-        # Blocos e eventos com tiros
-        # Blocos e eventos com players e inimigos
         
     def colisoes_tiros(self):
+        '''
+        Com os blocos e eventos
+        '''
         tiros = list()
         for inimigo in self.gerenciador.inimigos:
             tiros += inimigo.tiros
@@ -212,11 +215,14 @@ class jogo(ABC):
                     colidiu = True
                     break
             for evento in self.eventos:
-                colidiu = evento.verificar_colisao(tiro_rect, tiro.dano_tiro)
+                colidiu = evento.verificar_colisao(tiro_rect, tiro.dano)
                 if colidiu:
                     tiro.ativo = False
         
     def colisoes_inimigos(self):
+        '''
+        Com os blocos e eventos
+        '''
         for inimigo in self.gerenciador.inimigos:
             for bloco in self.obstaculos:
                 colidiu = bloco.verificar_colisao(inimigo, inimigo.dano)
@@ -224,8 +230,14 @@ class jogo(ABC):
                     inimigo.levar_dano(bloco.dano)
                 if bloco.vida <= 0:
                     self.obstaculos.remove(bloco)
-
+            for evento in self.eventos:
+                if evento.verificar_colisao(inimigo.rect, inimigo.dano):
+                    inimigo.levar_dano(evento.dano)
+    
     def colisoes_players(self):
+        '''
+        Com os blocos e eventos
+        '''
         for player in [self.gerenciador.v1, self.gerenciador.v2]:
             for bloco in self.obstaculos:
                 colidiu = bloco.verificar_colisao(player, player.dano)
@@ -233,7 +245,10 @@ class jogo(ABC):
                     player.levar_dano(bloco.dano)
                 if bloco.vida <= 0:
                     self.obstaculos.remove(bloco)
-
+            for evento in self.eventos:
+                if evento.verificar_colisao(player.rect, player.dano):
+                    player.levar_dano(evento.dano)
+    
     def criar_obstaculos(self, vida, cor = (0, 0, 0), nome = None, alcance = 0):
         '''
         Método destinado a geração dos obstáculos. Para isso deve ser
@@ -297,6 +312,9 @@ class jogo(ABC):
         '''
         if isinstance(rect, pygame.Rect):
             self.eventos.append(evento.explosao(rect, self.display, self.volume_efeitos))
+        if isinstance(rect, List):
+            for rects in rect:
+                self.eventos.append(evento.explosao(rects, self.display, self.volume_efeitos))
 
 class oceano(jogo):
     '''
@@ -347,6 +365,7 @@ class oceano(jogo):
         '''
         super().__init__(largura, altura, cor, musica, efeitos, display)
         pygame.display.set_caption("Mapa oceano")
+        self.gerenciador = gerenciador.Gerenciador(self.largura, self.altura, self.display, self.configuracoes, 'oceano', self.volume_efeitos)
         self.fundos = []
         for i in [1, 2]:
             fundo_i = pygame.image.load(f"../assets/fundos/oceano_{i}.png")
@@ -438,6 +457,7 @@ class deserto(jogo):
             eventos (chances entre 0 e 1)
         '''
         super().__init__(largura, altura, cor, musica, efeitos, display)
+        self.gerenciador = gerenciador.Gerenciador(self.largura, self.altura, self.display, self.configuracoes, 'deserto', self.volume_efeitos)
         pygame.display.set_caption("Mapa deserto")
         self.fundos = []
         for i in [1,2]:
@@ -529,6 +549,7 @@ class espaco(jogo):
             eventos (chances entre 0 e 1)
         '''
         super().__init__(largura, altura, cor, musica, efeitos, display)
+        self.gerenciador = gerenciador.Gerenciador(self.largura, self.altura, self.display, self.configuracoes, 'espaco', self.volume_efeitos)
         pygame.display.set_caption("Mapa espaco")
         self.fundos = []
         for i in [1,2]:
@@ -652,7 +673,7 @@ class obstaculo(pygame.sprite.Sprite):
 
     def verificar_colisao(self, objeto, dano : int = 0):
         if isinstance(objeto, evento.evento):
-            return objeto.verificar_colisao(self.rect, self.dano)
+            return objeto.verificar_colisao(self.rect, 1/2)
         else:
             if self.rect.colliderect(objeto.rect):
                 if objeto.rect.x < self.rect.x:
@@ -665,7 +686,7 @@ class obstaculo(pygame.sprite.Sprite):
                 elif objeto.rect.y > self.rect.y:
                     objeto.rect.y += 10
                 objeto.velocidade = 0
-                # self.vida -= dano
+                self.vida -= dano
 
                 objeto.rect.y = max(0, min(objeto.rect.y, self.altura_tela - objeto.tamanho))
                 objeto.rect.x = max(0, min(objeto.rect.x, self.largura_tela - objeto.tamanho))
