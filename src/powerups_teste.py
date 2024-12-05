@@ -12,7 +12,7 @@ class TestPowerUp(unittest.TestCase):
         mock_load.return_value = Mock()  # Retorna um mock de imagem
         mock_scale.return_value = Mock()  # Retorna um mock para a escala
 
-        powerup = PowerUp("path/to/image.png", 100, 200, "velocidade", 50)
+        powerup = PowerUp("../assets/poderes/velocidade.png", 100, 200, "velocidade", 50)
         self.assertEqual(powerup.x, 100)
         self.assertEqual(powerup.y, 200)
         self.assertEqual(powerup.tamanho, 50)
@@ -25,7 +25,7 @@ class TestPowerUp(unittest.TestCase):
         # Testa o efeito "velocidade"
         veiculo = Mock()
         veiculo.velocidade = 10
-        powerup = PowerUp("path/to/image.png", 0, 0, "velocidade", 50)
+        powerup = PowerUp("../assets/poderes/velocidade.png", 0, 0, "velocidade", 50)
         powerup.aplicar_efeito(veiculo)
         self.assertEqual(veiculo.velocidade, 12)
 
@@ -33,7 +33,7 @@ class TestPowerUp(unittest.TestCase):
         # Testa o efeito "vida"
         veiculo = Mock()
         veiculo.integridade = 80
-        powerup = PowerUp("path/to/image.png", 0, 0, "vida", 50)
+        powerup = PowerUp("../assets/poderes/velocidade.png", 0, 0, "vida", 50)
         powerup.aplicar_efeito(veiculo)
         self.assertEqual(veiculo.integridade, 100)
 
@@ -45,7 +45,7 @@ class TestPowerUp(unittest.TestCase):
         # Testa o efeito "tiro"
         veiculo = Mock()
         veiculo.velocidade_tiro = 15
-        powerup = PowerUp("path/to/image.png", 0, 0, "tiro", 50)
+        powerup = PowerUp("../assets/poderes/velocidade.png", 0, 0, "tiro", 50)
         powerup.aplicar_efeito(veiculo)
         self.assertEqual(veiculo.velocidade_tiro, 20)
 
@@ -53,13 +53,13 @@ class TestPowerUp(unittest.TestCase):
         # Testa o efeito "dano"
         veiculo = Mock()
         veiculo.dano = 3
-        powerup = PowerUp("path/to/image.png", 0, 0, "dano", 50)
+        powerup = PowerUp("../assets/poderes/dano.png", 0, 0, "dano", 50)
         powerup.aplicar_efeito(veiculo)
         self.assertEqual(veiculo.dano, 4)
 
     def test_expirado(self):
         # Testa o comportamento de expiração
-        powerup = PowerUp("path/to/image.png", 0, 0, "velocidade", 50)
+        powerup = PowerUp("../assets/poderes/velocidade.png", 0, 0, "velocidade", 50)
         powerup.criado_em = time.time() - 6  # Simula criação há 6 segundos
         self.assertTrue(powerup.expirado())
 
