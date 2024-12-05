@@ -1,0 +1,156 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{geometry}
+
+% Configurações de estilo
+\geometry{margin=1in}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    pdftitle={Batalhas Matemáticas},
+    pdfauthor={},
+    pdfsubject={Relatório de Desenvolvimento do Jogo},
+    pdfkeywords={jogo, Space Invaders, Python, Pygame}
+}
+
+\title{\textbf{FUNDAÇÃO GETÚLIO VARGAS}\\ \textbf{MATEMÁTICA APLICADA}\\\vspace{3\baselineskip}}
+\author{
+    JEAN GABRIEL DOMINGUETI \\[1ex]
+    RODRIGO DA CRUZ RIBEIRO \\[1ex]
+    ELIANE DA SILVA MOREIRA
+}
+\date{\vspace{4\baselineskip}
+    \large
+    \textbf{BATALHAS MATEMÁTICAS}\\[6\baselineskip]
+    Rio de Janeiro, Dezembro de 2024
+}
+
+\begin{document}
+\newpage
+\maketitle
+\newpage
+\renewcommand{\contentsname}{\centering{Sumário}}
+\tableofcontents
+\newpage
+
+\section{Introdução}
+Este documento descreve o desenvolvimento do jogo \textbf{Batalhas Matemáticas}, inspirado em \textit{Space Invaders}: um clássico de tiro onde o jogador controla um veículo e deve destruir inimigos enquanto desvia de seus ataques.
+
+Conforme o desenvolvimento de \textbf{Batalhas Matemáticas} foi progredindo, o jogo tornou-se algo bem distanciado da inspiração inicial por conter dois jogadores que lutam um contra o outro, diferentes paisagens, inimigos e veículos, diversos obstáculos, e muitos outros detalhes que não estão presentes em \textit{Space Invaders}. Este relatório aborda os principais aspectos do desenvolvimento, incluindo lógica de jogo, design e implementação.
+
+\section{Processo de Desenvolvimento do Jogo}
+O desenvolvimento do jogo foi feito em \textbf{Python} utilizando a biblioteca Pygame, aplicando conceitos de orientação a objetos. O projeto contou com a abordagem de diferentes elementos, funções e implementações. Segue um breve resumo de cada tópico trabalhado.
+
+\subsection{Design}
+Inicialmente, três cenários do jogo foram desenhados: deserto, oceano e espaço. Cada cenário conta com sprites próprias, desde veículos bem equipados até inimigos que geram \textit{power-ups} para os veículos. 
+Ao todo, há 4 \textit{power-ups}: vida, velocidade, dano e tiro. Tente coletá-los antes que expirem!
+Os sons do Tubarão que aparece de vez em quando na tela do oceano é um trecho da trilha do filme Tubarão, o som do Verme da Areia que aprece no deserto foi retirado do jogo Terraria e as músicas de fundo foram retiradas do jogo Stardew Valley. Os links para outros sons utilizados serão citados no final do relatório.
+
+\subsection{Implementações Principais}
+Foram implementadas as funcionalidades dos veículos, inimigos, powerups e tiros em arquivos separados assim como telas, botões, unittests e a Main do projeto. Resumidamente, as funções de destaque são:
+\begin{itemize}
+    \item Veículos: podem ganhar melhorias com os \textit{power-ups} gerados após a destruição de inimigos;
+    \item Inimigos: possuem uma IA simples para perseguir os veículos;
+    \item Tela: apresenta obstáculos que aparecem ao longo do jogo;
+    \item Unittest: verifica se os principais módulos do projeto estão funcionando corretamente.
+\end{itemize}
+
+\subsection{Controles dos Jogadores}
+Os dois jogadores podem se mover livremente, rotacionar e disparar uns contra os outros e contra inimigos (cuidado, os inimigos também podem atacar você!). As teclas de controle são:
+
+\begin{itemize}
+    \item \textbf{Jogador 1:}
+    \begin{description}[labelindent=0.5cm, leftmargin=2cm]
+        \item[\texttt{a}] - Esquerda
+        \item[\texttt{d}] - Direita
+        \item[\texttt{w}] - Cima
+        \item[\texttt{s}] - Baixo
+        \item[\texttt{c}] - Rotação anti-horária
+        \item[\texttt{v}] - Rotação horária
+        \item[\texttt{b}] - Disparo
+    \end{description}
+    \item \textbf{Jogador 2:}
+    \begin{description}[labelindent=0.5cm, leftmargin=2cm]
+        \item[\texttt{LEFT}] - Esquerda
+        \item[\texttt{RIGHT}] - Direita
+        \item[\texttt{UP}] - Cima
+        \item[\texttt{DOWN}] - Baixo
+        \item[\texttt{COMMA}] - Rotação anti-horária
+        \item[\texttt{PERIOD}] - Rotação horária
+        \item[\texttt{SEMICOLON}] - Disparo
+    \end{description}
+\end{itemize}
+
+\subsection{Divisão de Tarefas}
+O desenvolvimento do jogo foi dividido entre os membros da equipe da seguinte maneira:
+\begin{itemize}
+    \item \textbf{Eliane Moreira:} Funcionalidades básicas dos veículos, inimigos e \textit{power-ups}.
+    \item \textbf{Rodrigo Ribeiro:} Rotação, disparo e melhorias das funcionalidades básicas.
+    \item \textbf{Jean Domingueti:} Design, obstáculos, colisão e estruturação principal do jogo.
+\end{itemize}
+
+\subsection{Dificuldades Enfrentadas}
+Principais dificuldades enfrentadas e soluções implementadas: 
+\begin{itemize}
+    \item \textbf{Implementação dos limites:} Os veículos e inimigos estavam saindo dos limites da tela e sobrepondo-se uns aos outros. Para mantê-los dentro dos limites e não se sobreporem foram feitos ajustes nas colisões adequando-as aos problemas encontrados.
+    \item \textbf{Implementação da rotação e dos tiros:} Realizar os cálculos matemáticas para garantir que o ângulo em que a nave está apontando é correto, disparo do tiro a partir desta direção se certificando que o módulo do seu vetor velocidade se mantém constante e fazer com que ao um inimigo morrer os seus tiros já disparados continuem na tela. Para resolver os desafios foram utilizadas as funções \textit{cos} e \textit{sin} da biblioteca \textbf{math} e a criação de uma lista geral que guarda todos os tiros dos inimigos. 
+\end{itemize}
+
+\section{Como Executar o Projeto}
+Clone o repositório \url{https://github.com/JDomingueti/batalhas-matematicas} , navegue até o diretório do jogo e execute os passos a seguir. \\
+
+Crie um ambiente virtual utilizando o comando:
+\begin{verbatim}
+python -m venv venv
+\end{verbatim}
+
+Ative o ambiente virtual (Windows):
+\begin{verbatim}
+venv\Scripts\activate
+\end{verbatim}
+
+Ative o ambiente virtual (Unix ou MacOS):
+\begin{verbatim}
+source venv/bin/activate
+\end{verbatim}
+
+Para instalar os pacotes necessários execute:
+\begin{verbatim}
+pip install -r requirements.txt
+\end{verbatim}
+
+Para verificar os unittests execute:
+\begin{verbatim}
+cd src/tests.py
+\end{verbatim}
+
+Para iniciar o jogo execute:
+\begin{verbatim}
+cd src/main.py
+\end{verbatim}
+
+Divirta-se!
+
+\section {Conclusão}
+O desenvolvimento do jogo Batalhas Matemáticas foi desafiador e enriquecedor colaborando para aumentar o conhecimento na área de planejamento e criação de jogos.
+
+\section{Links}
+Som explosão - (0:21): \href{https://www.youtube.com/watch?v=jajIP4m6HfU}{YouTube - Som Explosão}\\
+Crab rave - (1:10): \href{https://www.youtube.com/watch?v=cE0wfjsybIQ}{YouTube - Crab Rave}\\
+Águas vivas: \href{https://pixabay.com/pt/sound-effects/funny-bubbles-96203/}{Pixabay - Águas Vivas}\\
+Bola de vento: \href{https://pixabay.com/pt/sound-effects/wind-91882/}{Pixabay - Bola de Vento}\\
+Gafanhotos: \href{https://pixabay.com/pt/sound-effects/criquet-2-72941/}{Pixabay - Gafanhotos}\\
+Space: \href{https://www.youtube.com/watch?v=TQ-Fv7bbJgM}{YouTube - Space}\\
+Cometa: \href{https://pixabay.com/sound-effects/fireball-whoosh-7-201453/}{Pixabay - Cometa}\\
+Laser inimigos: \href{https://pixabay.com/pt/sound-effects/laser-14792/}{Pixabay - Laser Inimigos}\\
+Laser player: \href{https://pixabay.com/pt/sound-effects/laser-104024/}{Pixabay - Laser Player}\\
+
+\end{document}
