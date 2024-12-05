@@ -82,7 +82,9 @@ class bola_de_feno(evento.evento):
         self.bola_de_feno = pygame.transform.scale(self.bola_de_feno, (self.tamanho, self.tamanho))
         self.bola_de_feno_rect = self.bola_de_feno.get_rect()
         self.bola_de_feno_rect.topleft = (self.x_inicio - self.tamanho//2, self.y_inicio - self.tamanho//2)
+        self.dano = 6
         self.vida = 5
+        self.pontos = 25
         self.sprite_atual = 0
         self.frames_por_sprite = 30
         self.frame_atual = 0
@@ -114,9 +116,15 @@ class bola_de_feno(evento.evento):
         self.tela.blit(img, rect)
 
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
+        pontos = 0
         if self.bola_de_feno_rect.colliderect(rect_obj):
-            self.vida = max(self.vida - dano, 0)
-            return True
+            if (pygame.time.get_ticks() - self.separador_dano) > self.intervalo_dano:
+                self.vida = max(self.vida - dano, 0)
+                if self.vida <= 0:
+                    pontos += self.pontos
+                self.separador_dano = pygame.time.get_ticks()
+            return True, pontos
+        return False, pontos
 
     def matar(self, callback):
         if ((self.bola_de_feno_rect.right < -2 * self.tamanho) or (self.bola_de_feno_rect.left > (self.largura_tela + 2 * self.tamanho))):
@@ -231,6 +239,8 @@ class nuvem_gafanhotos(evento.evento):
         self.separador_gafanhotos = pygame.time.get_ticks()
         self.gafanhotos_rects = []
         self.vidas = []
+        self.dano = 3
+        self.pontos = 5
         self.imgs = []
         self.frame_atual = 0
         self.frames_por_sprite = 10
@@ -273,12 +283,17 @@ class nuvem_gafanhotos(evento.evento):
         self.quantidade_spawnada += 1
 
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
+        pontos = 0
         colidiu = False
         for pos, rect in enumerate(self.gafanhotos_rects):
             if rect.colliderect(rect_obj):
                 colidiu = True
-                self.vidas[pos] = max(self.vidas[pos] - dano, 0)
-        return colidiu
+                if (pygame.time.get_ticks() - self.separador_dano) > self.intervalo_dano:
+                    self.vidas[pos] = max(self.vidas[pos] - dano, 0)
+                    if self.vidas[pos] <= 0:
+                        pontos += self.pontos
+                    self.separador_dano = pygame.time.get_ticks()
+        return colidiu, pontos
 
     def matar(self, callback):
         for pos, gafanhoto in enumerate(self.gafanhotos_rects):
@@ -294,7 +309,7 @@ class nuvem_gafanhotos(evento.evento):
                         self.imgs.pop(pos)
                         self.vidas.pop(pos)
 
-        if ((len(self.gafanhotos_rects) == 0) and (self.quantidade_spawnada > 0)):
+        if ((len(self.gafanhotos_rects) == 0) and (self.quantidade_spawnada == self.quantidade_maxima)):
             self.som.fadeout(500)
             return True
         return False
@@ -417,6 +432,8 @@ class verme_da_areia(evento.evento):
         self.tamanho_corpo = random.randint(8,12)
         self.partes_criadas = 0
         self.vida = 3
+        self.pontos = 30
+        self.dano = 9
         self.verme_da_areia_rects = []
         self.verme_da_areia_vidas = []
         self.velocidades_verme_da_areia : list[pygame.Vector2]= []
@@ -483,12 +500,17 @@ class verme_da_areia(evento.evento):
         self.partes_criadas += 1
 
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
+        pontos = 0
         colidiu = False
         for pos, rect in enumerate(self.verme_da_areia_rects):
             if rect.colliderect(rect_obj):
                 colidiu = True
-                self.verme_da_areia_vidas[pos] = max(self.verme_da_areia_vidas[pos] - dano, 0)
-        return colidiu
+                if (pygame.time.get_ticks() - self.separador_dano) > self.intervalo_dano:
+                    self.verme_da_areia_vidas[pos] = max(self.verme_da_areia_vidas[pos] - dano, 0)
+                    if self.verme_da_areia_vidas[pos] <= 0:
+                        pontos += self.pontos
+                    self.separador_dano = pygame.time.get_ticks()
+        return colidiu, pontos
 
     def matar(self, callback):
         matar_pos = []
@@ -507,7 +529,7 @@ class verme_da_areia(evento.evento):
                     self.verme_da_areia_rects.remove(rect)
                 elif ((rect.left > self.largura_tela) or (rect.right < 0)):
                     self.verme_da_areia_rects.remove(rect)
-        if len(self.verme_da_areia_rects) == 0 and self.partes_criadas > 0:
+        if len(self.verme_da_areia_rects) == 0 and self.partes_criadas == self.tamanho_corpo:
             self.som.fadeout(100)
             return True
         else:

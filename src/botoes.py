@@ -180,6 +180,7 @@ class Controle_desl(padrao):
         self.barra_altura = tamanho_barra[1]
         self.barra = pygame.rect.Rect(self.x_pos + 10, self.y_pos - self.barra_altura//2, self.barra_largura, self.barra_altura)
         self.tamanho_controle = 2 * self.barra_altura
+        self.old_percent = percent
         self.percent = percent
         self.controle_x = self.barra.left + self.percent * self.barra_largura
         self.controle = pygame.rect.Rect(self.controle_x, self.y_pos - self.tamanho_controle//2, self.tamanho_controle, self.tamanho_controle)
@@ -224,6 +225,9 @@ class Controle_desl(padrao):
         que é atualizado pelo código que criou o botão.
         '''
         super().atualizar()
+        if self.old_percent != self.percent:
+            pygame.mixer.Sound.play(self.som)
+            self.old_percent = self.percent
         if self.percent >= 1:
             self.percent = 1
         elif self.percent <= 0:

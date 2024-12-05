@@ -71,7 +71,9 @@ class evento(ABC):
         self.lado_inicio = random.choice([-1,1])
         self.contador = pygame.time.get_ticks()
         self.caminho = "../assets/eventos/"
-
+        self.intervalo_dano = 200
+        self.separador_dano = 0
+        
     def aviso_direcao(self):
         '''
         Gera o aviso na tela que um evento foi inicializado e a posição
@@ -215,7 +217,7 @@ class explosao(evento):
         self.tela.blit(self.imgs[self.sprite_atual], self.rect)
 
     def verificar_colisao(self, rect_obj: pygame.Rect, dano: int):
-        pass
+        return False, 0
 
     def matar(self, callback):
         if self.destruir:

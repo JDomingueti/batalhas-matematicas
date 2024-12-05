@@ -90,6 +90,8 @@ class tela(padrao.tela):
             self.caminho_fundo += fundo
             self.fundo = pygame.image.load(fundo)
             self.fundo = pygame.transform.scale(self.fundo, (self.largura, self.altura))
+            self.fundo = self.fundo.convert_alpha()
+            self.fundo.set_alpha(60)
         
         self.fonte = pygame.font.SysFont("Terminal", self.largura//10)
         self.nome = self.fonte.render("Opcões", False, "White")

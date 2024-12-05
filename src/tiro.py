@@ -2,13 +2,13 @@ import pygame
 import math
 
 class Tiro:
-    def __init__(self, x, y, angulo, velocidade, cor = (255, 255, 0), dano_tiro=5):
+    def __init__(self, x, y, angulo, velocidade, cor = (255, 255, 0), dano=5, raio=5):
         self.x = x
         self.y = y
         self.velocidade = velocidade
         self.angulo = angulo
-        self.raio = 5
-        self.dano_tiro = dano_tiro
+        self.raio = raio
+        self.dano = dano
         self.cor = cor
         self.ativo = True
     
