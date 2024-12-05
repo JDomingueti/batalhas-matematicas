@@ -61,6 +61,7 @@ class PowerUp:
         tamanho: int
             Dimensão do powerup       
         '''
+        pygame.init()
         self.x = x
         self.y = y
         self.tamanho = tamanho
