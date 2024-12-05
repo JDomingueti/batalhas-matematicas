@@ -5,30 +5,68 @@ from veiculos import Veiculo
 from inimigos import *
 
 class Gerenciador:
-    def __init__(self, largura, altura, display) -> None:
+    def __init__(self) -> None:
+        """
+        Inicializa a classe Gerenciador, configurando os principais elementos do jogo.
+
+        Este método define os atributos básicos necessários para o funcionamento do jogo,
+        incluindo as dimensões da tela, veículos dos jogadores, inimigos, power-ups, e
+        os controles atribuídos para cada veículo.
+
+        Atributos
+        ----------
+        largura_tela : int
+            Largura da janela do jogo (padrão: 800).
+        altura_tela : int
+            Altura da janela do jogo (padrão: 600).
+        tamanho_veiculo : int
+            Dimensão (em pixels) do lado de cada veículo (padrão: 70).
+        limite_superior : int
+            Distância mínima (em pixels) do topo da tela (padrão: 50).
+        tela : pygame.Surface
+            Superfície que representa a janela principal do jogo.
+        clock : pygame.time.Clock
+            Gerenciador do tempo de atualização (frames por segundo).
+        is_running : bool
+            Estado do jogo (True se está ativo; False caso contrário).
+        v1_img, v2_img, in1_img, ... : str
+            Caminhos para os arquivos de imagem de veículos, inimigos e power-ups.
+        v1, v2 : Veiculo
+            Instâncias dos veículos controlados pelos jogadores.
+        inimigos : list[Inimigo]
+            Lista de inimigos presentes no jogo.
+        powerups : list[Powerup]
+            Lista de power-ups ativos no jogo.
+        max_inimigos : int
+            Número máximo de inimigos simultâneos (padrão: 4).
+        timer_inimigos : int
+            Contador para controlar a criação de novos inimigos.
+        controles_v1, controles_v2 : dict
+            Mapeamento de teclas para os controles de cada jogador.
+        """
         pygame.init()
 
         # Dimensões
-        self.largura_tela = largura
-        self.altura_tela = altura
+        self.largura_tela = 800
+        self.altura_tela = 600
         self.tamanho_veiculo = 70
         self.limite_superior = 50
-        self.tela = display
+        self.tela = pygame.display.set_mode((self.largura_tela, self.altura_tela))
         pygame.display.set_caption("Batalhas Matemáticas")
 
-        # Caminhos das imagens ! o.s.path.join colocar depois
-        v1_img = "../assets/veiculos/foguete1.png"
-        v2_img = "../assets/veiculos/foguete2.png"
-        self.in1_img = "../assets/inimigos/inimigo1_deserto.png"
-        self.in2_img = "../assets/inimigos/inimigo2_deserto.png"
-        self.in3_img = "../assets/inimigos/inimigo3_deserto.png"
-        self.in4_img = "../assets/inimigos/inimigo4_deserto.png"
+        # Caminhos das imagens dos veículos e inimigos
+        v1_img = "batalhas-matematicas/assets/veiculos/foguete1.png"
+        v2_img = "batalhas-matematicas/assets/veiculos/foguete2.png"
+        self.in1_img = "batalhas-matematicas/assets/inimigos/inimigo1_deserto.png"
+        self.in2_img = "batalhas-matematicas/assets/inimigos/inimigo2_deserto.png"
+        self.in3_img = "batalhas-matematicas/assets/inimigos/inimigo3_deserto.png"
+        self.in4_img = "batalhas-matematicas/assets/inimigos/inimigo4_deserto.png"
         
         # Caminhos das imagens dos powerups
-        self.powerup1_img = "../assets/poderes/vida.png"
-        self.powerup2_img = "../assets/poderes/velocidade.png"
-        self.powerup3_img = "../assets/poderes/bala.png"
-        self.powerup4_img = "../assets/poderes/dano.png"
+        self.powerup1_img = "batalhas-matematicas/assets/poderes/vida.png"
+        self.powerup2_img = "batalhas-matematicas/assets/poderes/velocidade.png"
+        self.powerup3_img = "batalhas-matematicas/assets/poderes/bala.png"
+        self.powerup4_img = "batalhas-matematicas/assets/poderes/dano.png"
 
         self.inimigos : List[Inimigo] = []
         self.max_inimigos = 4
@@ -57,8 +95,8 @@ class Gerenciador:
             'disparo': pygame.K_SEMICOLON
         }
         
-        self.v1 = Veiculo(v1_img, 20, (self.altura_tela - self.tamanho) // 2, self.largura_tela, self.altura_tela, self.tamanho, controles_v1)  
-        self.v2 = Veiculo(v2_img, self.largura_tela - self.tamanho - 20, (self.altura_tela - self.tamanho) // 2, self.largura_tela, self.altura_tela, self.tamanho, controles_v2, True)
+        self.v1 = Veiculo(v1_img, 20, (self.altura_tela - self.tamanho_veiculo) // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo, controles_v1)  
+        self.v2 = Veiculo(v2_img, self.largura_tela - self.tamanho_veiculo - 20, (self.altura_tela - self.tamanho_veiculo) // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo, controles_v2, True)
         self.veiculos = [
             self.v1,
             self.v2,
@@ -67,21 +105,49 @@ class Gerenciador:
         self.clock = pygame.time.Clock()
         self.is_running = False
 
-    def criar_inimigos(self, tipo, x, largura_tela, altura_tela, tamanho):
+    def criar_inimigos(self, tipo, x, largura_tela, altura_tela, tamanho_veiculo):
+        """
+        Cria inimigos de acordo com o tipo especificado.
+
+        Parâmetros
+        ----------
+        tipo : int
+            Tipo de inimigo a ser criado.
+        x : int
+            Posição inicial no eixo X.
+        largura_tela : int
+            Largura da tela para os limites de movimento.
+        altura_tela : int
+            Altura da tela para os limites de movimento.
+        tamanho_veiculo : int
+            Tamanho dos inimigos.
+        """
+
         match tipo: 
             case 1:
-                inimigo = Inimigo1(self.in1_img, x, largura_tela, altura_tela, tamanho, self.powerup1_img, "vida")
+                inimigo = Inimigo1(self.in1_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup1_img, "vida")
             case 2: 
-                inimigo = Inimigo2(self.in2_img, x, largura_tela, altura_tela, tamanho, self.powerup2_img, "velocidade")
+                inimigo = Inimigo2(self.in2_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup2_img, "velocidade")
             case 3:
-                inimigo = Inimigo3(self.in3_img, x, largura_tela, altura_tela, tamanho, self.powerup3_img, "tiro")
+                inimigo = Inimigo3(self.in3_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup3_img, "tiro")
             case 4:
-                inimigo = Inimigo4(self.in4_img, x, largura_tela, altura_tela, tamanho, self.powerup4_img, "dano")
+                inimigo = Inimigo4(self.in4_img, x, largura_tela, altura_tela, tamanho_veiculo, self.powerup4_img, "dano")
             case _: 
                 return
         self.inimigos.append(inimigo)
 
-    def criar_powerups(self, tipo, x, largura_tela, altura_tela, tamanho):
+    def criar_powerups(self, tipo, x, largura_tela, altura_tela, tamanho_veiculo):
+        """
+        Cria power-ups no jogo.
+
+        Este método adiciona power-ups após a morte de inimigos com tipos correspondentes.
+
+        Atualiza
+        --------
+        powerups : list[Powerup]
+            Adiciona um novo objeto Powerup à lista de power-ups.
+
+        """
         inimigo_powerups = {
             1: (self.in1_img, self.powerup1_img, "vida"),
             2: (self.in2_img, self.powerup2_img, "velocidade"),
@@ -91,34 +157,45 @@ class Gerenciador:
 
         if tipo in inimigo_powerups:
             inimigo_img, powerup_img, powerup_efeito = inimigo_powerups[tipo]
-            inimigo = Inimigo(inimigo_img, x, largura_tela, altura_tela, tamanho, powerup_img, powerup_efeito)
+            inimigo = Inimigo(inimigo_img, x, largura_tela, altura_tela, tamanho_veiculo, powerup_img, powerup_efeito)
             self.inimigos.append(inimigo)
   
     def colisao_tiro(self, tiro, objeto):
-        """Verifica colisão com outro objeto (Tiro ou Jogador)."""
+        '''
+        Verifica colisão com outro objeto (Tiro ou Jogador).
+        '''
         if isinstance(objeto, Veiculo):
             # Colisão do tiro com o jogador
-            if objeto.x <= tiro.x <= objeto.x + objeto.tamanho \
-                and objeto.y <= tiro.y <= objeto.y + objeto.tamanho:
+            if objeto.x <= tiro.x <= objeto.x + objeto.tamanho_veiculo \
+                and objeto.y <= tiro.y <= objeto.y + objeto.tamanho_veiculo:
                 objeto.integridade -= tiro.dano_tiro  # Dano fixo por tiro
                 tiro.ativo = False
         
         if isinstance(objeto, Inimigo):
             #Colisão do tiro com o inimigo
-            if objeto.rect.x <= tiro.x <= objeto.rect.x + objeto.tamanho \
-                and objeto.rect.y <= tiro.y <= objeto.rect.y + objeto.tamanho:
+            if objeto.rect.x <= tiro.x <= objeto.rect.x + objeto.tamanho_veiculo \
+                and objeto.rect.y <= tiro.y <= objeto.rect.y + objeto.tamanho_veiculo:
                 objeto.integridade -= tiro.dano_tiro  # Dano fixo por tiro
                 tiro.ativo = False
 
     def verificar_colisoes_powerups(self):
+        """
+        Verifica colisões entre veículos e power-ups.
+
+        Se um veículo colidir com um power-up, aplica o efeito do power-up e remove-o da lista.
+        """
         for powerup in self.powerups[:]:
             for veiculo in self.veiculos:
-                veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho, veiculo.tamanho)
+                veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho_veiculo, veiculo.tamanho_veiculo)
                 if powerup.rect.colliderect(veiculo_rect):
                     powerup.aplicar_efeito(veiculo) 
                     self.powerups.remove(powerup)
 
     def verificar_colisoes_entre_inimigos(self):
+        '''
+        Verifica colisões entre os inimigos e resolve o impacto,
+         ajustando suas posições e diminuindo integridade.
+        '''
         for i, inimigo1 in enumerate(self.inimigos):
             for inimigo2 in self.inimigos[i + 1:]:
                 if inimigo1.rect.colliderect(inimigo2.rect):
@@ -132,16 +209,20 @@ class Gerenciador:
                     inimigo2.velocidade_horizontal *= -1
 
                     # Limita os inimigos aos limites da tela
-                    inimigo1.rect.x = max(0, min(self.largura_tela - self.tamanho, inimigo1.rect.x))
-                    inimigo1.rect.y = max(0, min(self.altura_tela - self.tamanho, inimigo1.rect.y))
-                    inimigo2.rect.x = max(0, min(self.largura_tela - self.tamanho, inimigo2.rect.x))
-                    inimigo2.rect.y = max(0, min(self.altura_tela - self.tamanho, inimigo2.rect.y))
+                    inimigo1.rect.x = max(0, min(self.largura_tela - self.tamanho_veiculo, inimigo1.rect.x))
+                    inimigo1.rect.y = max(0, min(self.altura_tela - self.tamanho_veiculo, inimigo1.rect.y))
+                    inimigo2.rect.x = max(0, min(self.largura_tela - self.tamanho_veiculo, inimigo2.rect.x))
+                    inimigo2.rect.y = max(0, min(self.altura_tela - self.tamanho_veiculo, inimigo2.rect.y))
 
     def verificar_colisoes_entre_veiculos_e_inimigos(self):
+        '''
+        Verifica colisões entre os veículos e inimigos e 
+        resolve o impacto, ajustando suas posições e diminuindo integridade.
+        '''
         tempo_atual = pygame.time.get_ticks()
         for inimigo in self.inimigos:
             for veiculo in self.veiculos:
-                veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho, veiculo.tamanho)
+                veiculo_rect = pygame.Rect(veiculo.x, veiculo.y, veiculo.tamanho_veiculo, veiculo.tamanho_veiculo)
                 if inimigo.rect.colliderect(veiculo_rect):
                     if tempo_atual - inimigo.ultimo_tempo_colisao > 10:
                         veiculo.integridade -= 1
@@ -150,14 +231,14 @@ class Gerenciador:
                         # Ajusta a posição do inimigo para longe do veiculo
                         if inimigo.rect.x < veiculo.x:
                             inimigo.rect.x -= 10  # Move para a esquerda
-                            veiculo.x = min(self.largura_tela - veiculo.tamanho, veiculo.x + 5)
+                            veiculo.x = min(self.largura_tela - veiculo.tamanho_veiculo, veiculo.x + 5)
                         elif inimigo.rect.x > veiculo.x:
                             inimigo.rect.x += 10  # Move para a direita
                             veiculo.x = max(0, veiculo.x - 5)
 
                         if inimigo.rect.y < veiculo.y:
                             inimigo.rect.y -= 10  # Move para cima
-                            veiculo.y = min(self.altura_tela - veiculo.tamanho, veiculo.y + 5)
+                            veiculo.y = min(self.altura_tela - veiculo.tamanho_veiculo, veiculo.y + 5)
                         elif inimigo.rect.y > veiculo.y:
                             inimigo.rect.y += 10  # Move para baixo
                             veiculo.y = max(self.limite_superior, veiculo.y - 5)
@@ -167,32 +248,40 @@ class Gerenciador:
                         inimigo.velocidade_vertical *= -1
 
                         # Limita o inimigo aos limites da tela
-                        inimigo.rect.x = max(0, min(self.largura_tela - inimigo.tamanho, inimigo.rect.x))
-                        inimigo.rect.y = max(self.limite_superior, min(self.altura_tela - inimigo.tamanho, inimigo.rect.y))
-                        veiculo.x = max(0, min(self.largura_tela - veiculo.tamanho, veiculo.x))
-                        veiculo.y = max(self.limite_superior, min(self.altura_tela - veiculo.tamanho, veiculo.y))
+                        inimigo.rect.x = max(0, min(self.largura_tela - inimigo.tamanho_veiculo, inimigo.rect.x))
+                        inimigo.rect.y = max(self.limite_superior, min(self.altura_tela - inimigo.tamanho_veiculo, inimigo.rect.y))
+                        veiculo.x = max(0, min(self.largura_tela - veiculo.tamanho_veiculo, veiculo.x))
+                        veiculo.y = max(self.limite_superior, min(self.altura_tela - veiculo.tamanho_veiculo, veiculo.y))
 
     def verificar_colisoes_entre_veiculos(self):
-        if pygame.Rect(self.v1.x, self.v1.y, self.v1.tamanho, self.v1.tamanho).colliderect(
-                pygame.Rect(self.v2.x, self.v2.y, self.v2.tamanho, self.v2.tamanho)):
+        '''
+        Verifica colisões entre os veículos e resolve o impacto, ajustando suas posições e diminuindo integridade.
+        '''
+        if pygame.Rect(self.v1.x, self.v1.y, self.v1.tamanho_veiculo, self.v1.tamanho_veiculo).colliderect(
+                pygame.Rect(self.v2.x, self.v2.y, self.v2.tamanho_veiculo, self.v2.tamanho_veiculo)):
             self.v1.integridade -= 1 
             self.v2.integridade -= 1
 
             if self.v1.x < self.v2.x:
                 self.v1.x = max(0, self.v1.x - 5)
-                self.v2.x = min(self.largura_tela - self.v2.tamanho, self.v2.x + 5)
+                self.v2.x = min(self.largura_tela - self.v2.tamanho_veiculo, self.v2.x + 5)
             else:
-                self.v1.x = min(self.largura_tela - self.v1.tamanho, self.v1.x + 5)
+                self.v1.x = min(self.largura_tela - self.v1.tamanho_veiculo, self.v1.x + 5)
                 self.v2.x = max(0, self.v2.x - 5)
             if self.v1.y < self.v2.y:
                 self.v1.y = max(self.limite_superior, self.v1.y - 5)
-                self.v2.y = min(self.altura_tela - self.v2.tamanho, self.v2.y + 5)
+                self.v2.y = min(self.altura_tela - self.v2.tamanho_veiculo, self.v2.y + 5)
             else:
-                self.v1.y = min(self.altura_tela - self.v1.tamanho, self.v1.y + 5)
+                self.v1.y = min(self.altura_tela - self.v1.tamanho_veiculo, self.v1.y + 5)
                 self.v2.y = max(self.limite_superior, self.v2.y - 5)
 
     def colisoes_dos_tiros(self):
+        """
+        Verifica colisões dos tiros com veículos e inimigos.
 
+        Ao colidir, o tiro aplica dano no veículo ou inimigo que sofreu o impacto
+         e remove o tiro da lista.
+        """
         for inimigo in self.inimigos:
             for tiro in inimigo.tiros[:]:
                 self.colisao_tiro(tiro, self.v1)
@@ -221,14 +310,17 @@ class Gerenciador:
                 self.v2.tiros.remove(tiro)
 
     def run(self):
-        # Inicializa o jogo e faz aprecer um inimigo por vez
+        """
+        Método principal para iniciar o loop do jogo e fazer
+         aparecer um inimigo por vez.
+        """
         self.is_running = True
         inimigos = [1, 2, 3, 4]
         while self.is_running:
             if len(self.inimigos) < self.max_inimigos and pygame.time.get_ticks() - self.timer_inimigos > 20000:
                 if inimigos:
                     idx = random.choice(inimigos)
-                    self.criar_inimigos(idx, self.largura_tela // 2, self.largura_tela, self.altura_tela, self.tamanho)
+                    self.criar_inimigos(idx, self.largura_tela // 2, self.largura_tela, self.altura_tela, self.tamanho_veiculo)
                     inimigos.remove(idx)
                     self.timer_inimigos = pygame.time.get_ticks()
 
@@ -256,12 +348,27 @@ class Gerenciador:
         pygame.quit()
 
     def eventos(self):
+        """
+        Gerencia os eventos do jogo, como entrada do teclado e fechamento da janela.
+
+        Este método verifica eventos do Pygame, como o pressionamento de teclas
+        e o encerramento da janela. É utilizado para determinar se o jogo
+        deve continuar rodando.
+
+        Atualiza
+        --------
+        is_running : bool
+            Define como False caso o evento de fechamento seja detectado.
+        """
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 self.is_running = False
 
     def update(self):
-        # Atualiza a posição dos veículos e inimigos
+        '''
+        Atualiza o estado do jogo, movendo os veículos, verificando colisões, criando novos inimigos e power-ups, 
+        e apresentando estes na tela.
+        '''
         keys = pygame.key.get_pressed()
         self.v1.processar_movimento(keys, is_v1=True)
         self.v2.processar_movimento(keys, is_v1=False)
@@ -292,10 +399,28 @@ class Gerenciador:
 
         # Verifica se a integridade de algum veículo chegou a zero
         if self.v1.integridade <= 0 or self.v2.integridade <= 0:
-            #print("Fim de Jogo!")
+            print("Fim de Jogo!")
             self.is_running = False
 
     def draw(self):
+        '''
+        Desenha os elementos do jogo na tela.
+
+        Este método é responsável por exibir os elementos visuais do jogo,
+        como o plano de fundo, jogador, inimigos e power-ups, na janela do Pygame.
+
+        Observações
+        -----------
+        A ordem de desenho é importante para garantir que os elementos
+        sejam exibidos corretamente, com o jogador e os inimigos sobre o plano de fundo.
+
+        Atualiza
+        --------
+        tela : pygame.Surface
+            Atualiza a superfície da tela com os elementos do jogo.
+        '''
+
+        self.tela.fill((255, 255, 255)) # Fundo branco
         self.v1.draw(self.tela)
         self.v2.draw(self.tela)
         for inimigo in self.inimigos:
@@ -310,6 +435,8 @@ class Gerenciador:
         self.v1.mostrar_integridade(self.tela, (20, 25))  # v1 no canto superior esquerdo
         self.v2.mostrar_integridade(self.tela, (self.largura_tela - 250, 25))  # v2 no canto superior direito
         
+        pygame.display.flip()
+
 if __name__ == '__main__':
     jogo = Gerenciador()
     jogo.run()
