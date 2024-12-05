@@ -1,6 +1,6 @@
 import pygame, sys, telas
 import jogo
-from telas import inicio, opcoes, pause_em_jogo, selecao
+from telas import inicio, opcoes, pause_em_jogo, selecao, fim_jogo
 from typing import List
 
 class GerenciadorTelas:
@@ -123,6 +123,50 @@ class GerenciadorTelas:
         self.estado = 'inicio'
         self.relogio = pygame.time.Clock()
 
+    def iniciar(self):
+        def aux_quit():
+            eventos: List[pygame.event.Event] = pygame.event.get()
+            for evento in eventos:
+                if (evento.type == pygame.QUIT):
+                    pygame.quit()
+                    sys.exit()
+        tutorial = pygame.image.load("../assets/fundos/tela_teclas.png")
+        tutorial = pygame.transform.scale(tutorial, (self.largura, self.altura))
+        tutorial = pygame.Surface.convert_alpha(tutorial)
+        tutorial.set_alpha(0)
+        iniciando = True
+        frame = 0
+        frame_add = 1
+        pygame.time.delay(250)
+        while iniciando:
+            aux_quit()
+            teclas_pressionadas = pygame.key.get_pressed()
+            if teclas_pressionadas[pygame.K_ESCAPE] or (frame == 0 and frame_add == -1):
+                frame = 0
+                frame_add = 1
+                break
+            elif(frame == 255):
+                pygame.time.delay(1000)
+                frame_add *= -1
+            tutorial.set_alpha(frame)
+            self.display.fill((0,0,0))
+            self.display.blit(tutorial, (0,0))
+            pygame.display.flip()
+            frame += frame_add
+        pygame.time.delay(500)
+        imagem = self.tela.fundo.convert_alpha()
+        while True:
+            aux_quit()
+            teclas_pressionadas = pygame.key.get_pressed()
+            if teclas_pressionadas[pygame.K_ESCAPE] or frame == 255:
+                break
+            imagem.set_alpha(frame)
+            self.display.fill((0,0,0))
+            self.display.blit(imagem, (0,0))
+            pygame.display.flip()
+            frame += frame_add
+        self.run()
+            
     def run(self):
         '''
         Esse método é responsável por, principalmente, redirecionar
@@ -137,7 +181,6 @@ class GerenciadorTelas:
                 eventos: List[pygame.event.Event] = pygame.event.get()
                 for evento in eventos:
                     self.tela.checar_eventos(evento)
-                    # self.interagir(res)
                     if (evento.type == pygame.QUIT):
                         pygame.quit()
                         sys.exit()
@@ -175,7 +218,8 @@ class GerenciadorTelas:
                 self.tela.desenhar()
             
             else:
-
+                if self.tela.encerrar:
+                    self.interagir("encerrar")
                 eventos: List[pygame.event.Event] = pygame.event.get()
                 for evento in eventos:
                     if (evento.type == pygame.QUIT):
@@ -184,6 +228,11 @@ class GerenciadorTelas:
                 teclas_pressionadas = pygame.key.get_pressed()
                 if teclas_pressionadas[pygame.K_ESCAPE]:
                     if (pygame.time.get_ticks() - tempo_press) > 300:
+                        if not self.pausado: self.tela.tempo_em_pause = pygame.time.get_ticks()
+                        else:
+                            self.tela.tempo_em_pause -= pygame.time.get_ticks()
+                            self.tela.tempo_fim_jogo -= self.tela.tempo_em_pause
+                            self.tela.tempo_em_pause = 0
                         tempo_press = pygame.time.get_ticks()
                         self.tela_pause.botoes = self.tela_pause.botoes_principais
                         self.tela_pause.set_botoes = 0
@@ -253,11 +302,13 @@ class GerenciadorTelas:
                 pygame.display.set_caption("Seleção de mapas")
                 self.estado = 'selecao'
             case 'opcoes':
-                self.tela = opcoes.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, None, self.display, self.interagir)
+                self.tela = opcoes.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "../assets/fundos/tela_oficina.jpg", self.display, self.interagir)
                 pygame.display.set_caption("Opções")
                 self.estado = 'opcoes'
             case 'inicio':
-                if (self.estado == 'jogando'):
+                if (self.estado in ['jogando', 'encerrar']):
+                    pygame.mixer.stop()
+                    if self.pausado: self.pausado = False
                     self.musica = pygame.mixer.music.load("../assets/sons/journeyoftheprairieking(ending).mp3")
                     pygame.mixer.music.play(-1, 0, 1500)
                 self.tela = inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
@@ -311,6 +362,9 @@ class GerenciadorTelas:
                 pygame.mixer.music.set_volume(self.volume_musica)
             case 'resumir':
                 self.pausado = False
+            case 'encerrar':
+                self.tela = fim_jogo.tela(self.largura, self.altura, self.cor, self.volume_efeitos, self.display, self.interagir, self.tela.placar)
+                self.estado = 'encerrar'
             case _:
                 pass
 
@@ -321,6 +375,6 @@ if (__name__ == "__main__"):
     '''
     pygame.init()
     Jogo = GerenciadorTelas(800, 600, (0,0,0))
-    Jogo.run()
+    Jogo.iniciar()
     pygame.quit()
     sys.exit()

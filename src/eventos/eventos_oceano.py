@@ -108,7 +108,8 @@ class bando_aguas_vivas(evento.evento):
         self.separador_spawn = pygame.time.get_ticks()
         self.tempo_spawn = 400
         self.vida = 4
-        self.dano = 5
+        self.dano = 7
+        self.pontos = 8
         self.vidas = []
         self.agua_viva_rects = []
         self.imgs = []
@@ -157,14 +158,17 @@ class bando_aguas_vivas(evento.evento):
         self.quantidade_spawnada += 1
 
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
+        pontos = 0
         colidiu = False
         for pos, rect in enumerate(self.agua_viva_rects):
             if rect.colliderect(rect_obj):
                 colidiu = True
                 if (pygame.time.get_ticks() - self.separador_dano) > self.intervalo_dano:
                     self.vidas[pos] = max(self.vidas[pos] - dano, 0)
+                    if self.vidas[pos] <= 0:
+                        pontos += self.pontos
                     self.separador_dano = pygame.time.get_ticks()
-        return colidiu
+        return colidiu, pontos
 
     def matar(self, callback):
         if len(self.agua_viva_rects) > 0:
@@ -307,6 +311,7 @@ class caranguejo(evento.evento):
 
         self.vida = 15
         self.dano = 10
+        self.pontos = 50
         self.tamanho = (self.largura_tela//4, self.altura_tela//5)
         self.tamanho_garras = (2*self.tamanho[1]//3, self.tamanho[1])
 
@@ -415,14 +420,17 @@ class caranguejo(evento.evento):
         self.frame_atual += 1
 
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
+        pontos = 0
         colidiu = False
         for parte in [self.garra_esquerda_rect_atual, self.caranguejo_rect, self.garra_direita_rect_atual]:
             if parte.colliderect(rect_obj):
                 colidiu = True
                 if (pygame.time.get_ticks() - self.separador_dano) > self.intervalo_dano:
                     self.vida = max(self.vida - dano, 0)
+                    if self.vida <= 0:
+                        pontos = self.pontos
                     self.separador_dano = pygame.time.get_ticks()
-        return colidiu
+        return colidiu, pontos
 
     def matar(self, callback):
         if (self.vida == 0):
@@ -529,6 +537,7 @@ class tubarao(evento.evento):
             self.imgs_tubarao.append(img)
         self.vida = 10
         self.dano = 15
+        self.pontos = 40
         self.tubarao_rect = pygame.rect.Rect(self.x_inicio, self.y_inicio - self.tamanho[1]//2, self.tamanho[0], self.tamanho[1])
         self.afastamento_max = random.randint(self.altura_tela//10, self.altura_tela//5)
         self.velocidade_x = 5*self.lado_inicio
@@ -568,11 +577,15 @@ class tubarao(evento.evento):
         self.frame_atual += 1
     
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
+        pontos = 0
         if self.tubarao_rect.colliderect(rect_obj):
             if (pygame.time.get_ticks() - self.separador_dano) > self.intervalo_dano:
-                self.vida = max(self.vida - dano, 0)   
+                self.vida = max(self.vida - dano, 0)
+                if self.vida <= 0:
+                    pontos += self.pontos
                 self.separador_dano = pygame.time.get_ticks()
-            return True
+            return True, pontos
+        return False, pontos
 
     def matar(self, callback):
         if (self.vida == 0):

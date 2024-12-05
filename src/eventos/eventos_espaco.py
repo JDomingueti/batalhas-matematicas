@@ -76,7 +76,8 @@ class cometa(evento.evento):
         tempo_em_tela = random.randint(5,10)*10
         self.velocidade_y = self.altura_tela//tempo_em_tela
         self.velocidade_x = (self.x_fim - self.x_inicio)//tempo_em_tela
-        self.vida = 200
+        self.vida = 50
+        self.pontos = 50
         self.dano = 15
         self.cometa_rect = pygame.rect.Rect(self.x_inicio, -2*self.tamanho[1], self.tamanho[0], self.tamanho[1])
         self.cometa_imgs = []
@@ -117,12 +118,15 @@ class cometa(evento.evento):
         self.tela.blit(img, rect)
 
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
+        pontos = 0
         if self.cometa_rect.colliderect(rect_obj):
             if (pygame.time.get_ticks() - self.separador_dano) > self.intervalo_dano:
                 self.vida = max(self.vida - dano, 0)
+                if self.vida <= 0:
+                    pontos += self.pontos
                 self.separador_dano = pygame.time.get_ticks()
-            return True
-        return False
+            return True, pontos
+        return False, pontos
 
     def matar(self, callback):
         if self.cometa_rect.top > self.altura_tela or self.vida == 0:
@@ -261,6 +265,7 @@ class invasores_do_espaco(evento.evento):
         self.tamanho_nave = (self.tamanho_x*2, self.tamanho_y)
         self.matriz_inimigos = [[],[],[]]
         self.vida = 3
+        self.pontos_l = 8
         self.dano = 8
         self.vidas_inimigos = [[],[],[]]
         self.img_linha_1 = []
@@ -272,6 +277,7 @@ class invasores_do_espaco(evento.evento):
             self.img_linha_3.append(pygame.transform.scale(pygame.image.load(self.caminho + f"space/inimigo3/{i}.png"), (self.tamanho_x, self.tamanho_y)))
         self.img_nave_antiga = pygame.transform.scale(pygame.image.load(self.caminho + "space/nave.png"), self.tamanho_nave)            
         self.vida_nave = 6
+        self.pontos_n = 16
         self.nave_antiga_rect = pygame.Rect
         self.separador_dano = 50
         self.criar_inimigos()
@@ -327,20 +333,25 @@ class invasores_do_espaco(evento.evento):
 
     def verificar_colisao(self, rect_obj : pygame.Rect, dano: int):
         colidiu = False
+        pontos = 0
         for i, linha in enumerate(self.matriz_inimigos):
             for j, rect in enumerate(linha):
                 if rect.colliderect(rect_obj):
                     colidiu = True
                     if (pygame.time.get_ticks() - self.separador_dano) >= self.intervalo_dano:
                         self.vidas_inimigos[i][j] = max(self.vidas_inimigos[i][j] - dano, 0)
+                        if self.vidas_inimigos[i][j] <= 0:
+                            pontos += self.pontos_l
                         self.separador_dano = pygame.time.get_ticks()
         if self.nave_antiga_rect != None:
             if self.nave_antiga_rect.colliderect(rect_obj):
                 colidiu = True
                 if (pygame.time.get_ticks() - self.separador_dano) >= self.intervalo_dano:
                     self.vida_nave = max(self.vida_nave - dano, 0)
+                    if self.vida_nave <= 0:
+                        pontos += self.pontos_n
                     self.separador_dano = pygame.time.get_ticks()
-        return colidiu
+        return colidiu, pontos
 
     def matar(self, callback):
         if self.vida_nave == 0:

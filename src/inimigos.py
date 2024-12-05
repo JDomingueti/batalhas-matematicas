@@ -132,6 +132,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
         self.intervalo_dano = 500
         self.separador_dano = 0
         self.integridade = 10
+        self.pontos = 10
         self.powerup_image = powerup_image
         self.powerup_efeito = powerup_efeito
            
@@ -251,7 +252,7 @@ class Inimigo(pygame.sprite.Sprite, ABC):
                 if self.integridade <= 0:
                     powerup = PowerUp(self.powerup_image, self.rect.x, self.rect.y, self.powerup_efeito, self.tamanho)
                     powerups.append(powerup)
-                return True  # Remove o inimigo da lista
+                return True  # Remove o tiro da lista
         return False
 
     def levar_dano(self, dano):

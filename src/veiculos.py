@@ -97,8 +97,9 @@ class Veiculo:
         self.velocidade_padrao = 10
         self.velocidade = 10
         self.angulo = 0
+        self.pontos = 100
         self.tiros = []
-        self.dano = 1
+        self.dano = 5
         self.ultimo_disparo = 0 
         self.intervalo_tiro = 1
         self.velocidade_tiro = 10
@@ -108,7 +109,7 @@ class Veiculo:
 
     def processar_movimento(self, keys):
         '''
-        Método para processar o movimento do veículo
+        Método para processar o movimento e disparo do veículo
 
         Parâmetros:
         ----------
@@ -135,9 +136,12 @@ class Veiculo:
         if not self.ativo:
             return
         (self.x, self.y) = self.rect.topleft
-        # keys = pygame.key.get_pressed()
+        
         # variação da posição conforme as teclas são apertadas
         dx, dy = 0, 0
+        
+        if keys[self.teclas['disparo']]:
+            self.disparar()
         
         if keys[self.teclas['esquerda']]:
             dx = -self.velocidade
@@ -148,6 +152,7 @@ class Veiculo:
         if keys[self.teclas['baixo']]:
             dy = self.velocidade
         
+        self.rotacionar(keys)
         #atualização da posição horizontal
         novo_x = self.rect.x + dx
         if(0 <= novo_x and novo_x <= self.largura_tela - self.tamanho): self.rect.x = novo_x
@@ -157,11 +162,10 @@ class Veiculo:
         (self.x, self.y) = self.rect.topleft
         # self.rect.topleft = (novo_x, novo_y)
 
-    def rotacionar(self):
+    def rotacionar(self, keys):
         '''
         Método para rotacionar o veículo
         '''
-        keys = pygame.key.get_pressed()
         
         # Se a tecla de rotação anti horária foi
         # apertada o ângulo aumenta
@@ -192,7 +196,7 @@ class Veiculo:
                 angulo_tiro += 180
             self.som_tiro.play()
             self.som_tiro.set_volume(self.volume_tiro)
-            novo_tiro = Tiro(centro_x, centro_y, angulo_tiro, self.velocidade_tiro, raio = self.tamanho//15)
+            novo_tiro = Tiro(centro_x, centro_y, angulo_tiro, self.velocidade_tiro, dano = self.dano, raio = self.tamanho//15)
             self.tiros.append(novo_tiro)
             self.ultimo_disparo = tempo_atual
 

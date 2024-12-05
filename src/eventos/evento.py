@@ -217,7 +217,7 @@ class explosao(evento):
         self.tela.blit(self.imgs[self.sprite_atual], self.rect)
 
     def verificar_colisao(self, rect_obj: pygame.Rect, dano: int):
-        pass
+        return False, 0
 
     def matar(self, callback):
         if self.destruir:

@@ -17,7 +17,7 @@ class Gerenciador:
         self.volume_efeitos = vol_efeitos
         pygame.display.set_caption("Batalhas Matemáticas")
 
-        # Caminhos das imagens ! o.s.path.join colocar depois
+        # Caminhos das imagens !
         if configs == None:
             v1_img = "../assets/veiculos/foguete1.png"
             v2_img = "../assets/veiculos/foguete2.png"
@@ -106,19 +106,21 @@ class Gerenciador:
             self.inimigos.append(inimigo)
   
     def colisao_tiro(self, tiro, objeto):
-        """Verifica colisão com outro objeto (Tiro ou Jogador)."""
+        """Verifica colisão com outro objeto (Inimigo ou Jogador)."""
+        if not tiro.ativo:
+            return
         if isinstance(objeto, Veiculo):
             # Colisão do tiro com o jogador
             if objeto.x <= tiro.x <= objeto.x + objeto.tamanho \
                 and objeto.y <= tiro.y <= objeto.y + objeto.tamanho:
-                objeto.levar_dano(tiro.dano)  # Dano fixo por tiro
+                objeto.levar_dano(tiro.dano)
                 tiro.ativo = False
         
         if isinstance(objeto, Inimigo):
             #Colisão do tiro com o inimigo
             if objeto.rect.x <= tiro.x <= objeto.rect.x + objeto.tamanho \
                 and objeto.rect.y <= tiro.y <= objeto.rect.y + objeto.tamanho:
-                objeto.levar_dano(tiro.dano) # Dano fixo por tiro
+                objeto.levar_dano(tiro.dano)
                 tiro.ativo = False
 
     def verificar_colisoes_powerups(self):
@@ -196,7 +198,7 @@ class Gerenciador:
                 self.v1.rect.y = min(self.altura_tela - self.v1.tamanho, self.v1.rect.y + 5)
                 self.v2.rect.y = max(self.limite_superior, self.v2.rect.y - 5)
 
-    def colisoes_dos_tiros(self):
+    def colisoes_dos_tiros(self, placar):
 
         for inimigo in self.inimigos:
             for tiro in inimigo.tiros[:]:
@@ -207,15 +209,15 @@ class Gerenciador:
         
         for tiro in self.v1.tiros[:]:
             self.colisao_tiro(tiro, self.v2)
-            for inimigo in self.inimigos:
-                self.colisao_tiro(tiro, inimigo)
+            if self.v2.integridade <= 0 and self.v2.ativo:
+                placar[0] += self.v2.pontos
             if not tiro.ativo:
                 self.v1.tiros.remove(tiro)
         
         for tiro in self.v2.tiros[:]:
             self.colisao_tiro(tiro, self.v1)
-            for inimigo in self.inimigos:
-                self.colisao_tiro(tiro, inimigo)
+            if self.v1.integridade <= 0 and self.v1.ativo:
+                placar[1] += self.v1.pontos
             if not tiro.ativo:
                 self.v2.tiros.remove(tiro)
 
@@ -234,20 +236,14 @@ class Gerenciador:
             if len(inimigos) == 0:
                 inimigos = [1, 2, 3, 4]
 
-            # Checar a tecla de disparo
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_b]:
-                self.v1.disparar()
-            if keys[pygame.K_SEMICOLON]:
-                self.v2.disparar()
-
-            self.v1.rotacionar()
-            self.v2.rotacionar()
             self.v1.atualizar_tiros()
             self.v2.atualizar_tiros()
 
             self.eventos()
             self.draw()
+            
+            # Checar movimentos e disparo
+            keys = pygame.key.get_pressed()
             tmp = self.update(keys)
             self.clock.tick(30)
 
@@ -258,7 +254,7 @@ class Gerenciador:
             if evento.type == pygame.QUIT:
                 self.is_running = False
 
-    def update(self, keys):
+    def update(self, keys, placar):
         # Atualiza a posição dos veículos e inimigos, bem como geração
         # de powerups e destruição das naves
         self.v1.processar_movimento(keys)
@@ -270,9 +266,11 @@ class Gerenciador:
                 for tiro in self.v1.tiros:
                     if inimigo.colisao(tiro, self.veiculos[0], self.powerups):
                         self.v1.tiros.remove(tiro)
+                        if inimigo.integridade <= 0: placar[0] += inimigo.pontos
                 for tiro in self.v2.tiros:
                     if inimigo.colisao(tiro, self.veiculos[1], self.powerups):
                         self.v2.tiros.remove(tiro)
+                        if inimigo.integridade <= 0: placar[1] += inimigo.pontos 
             if inimigo.integridade <= 0:
                 rect_destruido.append(inimigo.rect)
                 self.inimigos.remove(inimigo)
@@ -293,12 +291,10 @@ class Gerenciador:
         self.verificar_colisoes_entre_inimigos()
         self.verificar_colisoes_entre_veiculos_e_inimigos()
         self.verificar_colisoes_entre_veiculos()
-        self.colisoes_dos_tiros()
+        self.colisoes_dos_tiros(placar)
 
         # Verifica se a integridade de algum veículo chegou a zero
         # if self.v1.integridade <= 0 or self.v2.integridade <= 0:
-            #print("Fim de Jogo!")
-            # self.is_running = False
         return rect_destruido
 
     def draw(self):
