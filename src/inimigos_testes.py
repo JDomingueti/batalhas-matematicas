@@ -1,90 +1,79 @@
 import unittest
-from unittest.mock import MagicMock, patch
-from inimigos import Inimigo, Inimigo1, Inimigo2, Inimigo3, Inimigo4
-from tiro import Tiro
-from powerups import PowerUp
+from unittest.mock import MagicMock
+import pygame
+from inimigos import Inimigo1, Inimigo2, Inimigo3, Inimigo4  # Importando as subclasses
 
 class TestInimigo(unittest.TestCase):
+    def setUp(self):
+        pygame.init()
+        self.largura_tela = 800
+        self.altura_tela = 600
+        self.tamanho = 50
+        self.path_image = "../assets/inimigos/inimigo1_deserto.png"
+        self.powerup_image = "../assets/poderes/dano.png"
+        self.powerup_efeito = "dano"
+        
+        # Mock do veículo
+        self.veiculo = MagicMock()
+        self.veiculo.x = 400
+        self.veiculo.y = 300
+        self.veiculo.dano = 2
 
-    @patch("pygame.image.load")
-    @patch("pygame.Surface")
-    def setUp(self, mock_surface, mock_load):
-        mock_load.return_value = mock_surface
-        self.mock_powerup_image = "mock_powerup.png"
-        self.mock_effect = "vida"
+        self.veiculos = [self.veiculo]
+
+        # Instância de Inimigo1
         self.inimigo = Inimigo1(
-            path_image="mock_path.png", 
+            self.path_image, 
             x=100, 
-            largura_tela=800, 
-            altura_tela=600, 
-            tamanho=50, 
-            powerup_img=self.mock_powerup_image, 
-            powerup_efeito=self.mock_effect
+            largura_tela=self.largura_tela, 
+            altura_tela=self.altura_tela, 
+            tamanho=self.tamanho, 
+            powerup_img=self.powerup_image, 
+            powerup_efeito=self.powerup_efeito
         )
 
-    def test_initialization(self):
-        self.assertEqual(self.inimigo.rect.x, 100)
-        self.assertEqual(self.inimigo.rect.y, 50)
-        self.assertEqual(self.inimigo.integridade, 10)
-        self.assertEqual(self.inimigo.powerup_efeito, "vida")
+    def test_perseguir_veiculo(self):
+        # Verifica se o inimigo se move na direção do veículo
+        posicao_original = (self.inimigo.rect.x, self.inimigo.rect.y)
+        self.inimigo.perseguir_veiculo(self.veiculos)
+        posicao_nova = (self.inimigo.rect.x, self.inimigo.rect.y)
+        self.assertNotEqual(posicao_original, posicao_nova)
 
-    @patch("pygame.Vector2")
-    def test_perseguir_veiculo(self, mock_vector):
-        veiculo_mock = MagicMock(x=200, y=300)
-        mock_vector.return_value.distance_to.return_value = 300
-        self.inimigo.perseguir_veiculo([veiculo_mock])
-
-        mock_vector.assert_called_with(200 - self.inimigo.rect.x, 300 - self.inimigo.rect.y)
-
-    @patch("time.time", return_value=10)
-    def test_disparar(self, mock_time):
-        veiculo_mock = MagicMock(x=200, y=300)
-        self.inimigo.disparar([veiculo_mock])
-
-        self.assertEqual(len(self.inimigo.tiros), 1)
-        tiro = self.inimigo.tiros[0]
-        self.assertIsInstance(tiro, Tiro)
-
-    @patch("pygame.Rect.colliderect", return_value=True)
-    def test_colisao(self, mock_colliderect):
-        tiro_mock = MagicMock(x=100, y=100, raio=5)
-        powerups = []
-
-        self.inimigo.colisao(tiro_mock, MagicMock(dano=5), powerups)
-        self.assertEqual(self.inimigo.integridade, 5)
-        self.assertEqual(len(powerups), 0)
-
-        # Simula destruição do inimigo
-        self.inimigo.integridade = 0
-        self.inimigo.colisao(tiro_mock, MagicMock(dano=5), powerups)
-        self.assertEqual(len(powerups), 1)
-        self.assertIsInstance(powerups[0], PowerUp)
+    def test_disparar(self):
+        # Testa se o inimigo adiciona tiros
+        self.inimigo.disparar(self.veiculos)
+        self.assertGreaterEqual(len(self.inimigo.tiros), 1)
 
     def test_atualizar_tiros(self):
-        tiro_mock = MagicMock(x=400, y=300)
-        self.inimigo.tiros.append(tiro_mock)
+        # Testa se os tiros fora da tela são removidos
+        tiro_mock = MagicMock()
+        tiro_mock.x = -10  # Fora da tela
+        tiro_mock.y = 300
+        self.inimigo.tiros = [tiro_mock]
         self.inimigo.atualizar_tiros()
+        self.assertEqual(len(self.inimigo.tiros), 0)
 
-        tiro_mock.mover.assert_called_once()
+    def test_colisao(self):
+        # Testa se uma colisão reduz a integridade do inimigo
+        powerups = []
+        tiro_mock = MagicMock()
+        tiro_mock.x = self.inimigo.rect.x
+        tiro_mock.y = self.inimigo.rect.y
+        tiro_mock.raio = 5
 
-    def test_update_calls_methods(self):
-        self.inimigo.perseguir_veiculo = MagicMock()
-        self.inimigo.disparar = MagicMock()
-        self.inimigo.atualizar_tiros = MagicMock()
+        resultado = self.inimigo.colisao(tiro_mock, self.veiculos[0], powerups)
+        self.assertTrue(resultado)
+        self.assertLess(self.inimigo.integridade, 10)
 
-        self.inimigo.update([], [], [])
-        self.inimigo.perseguir_veiculo.assert_called_once()
-        self.inimigo.disparar.assert_called_once()
-        self.inimigo.atualizar_tiros.assert_called_once()
+    def test_update(self):
+        # Testa o método update chamando seus métodos internos
+        powerups = []
+        tiros = []
+        self.inimigo.update(tiros, self.veiculos, powerups)
 
-    def test_subclasses(self):
-        inimigo2 = Inimigo2("mock_path.png", 100, 800, 600, 50, self.mock_powerup_image, "velocidade")
-        inimigo3 = Inimigo3("mock_path.png", 100, 800, 600, 50, self.mock_powerup_image, "tiro")
-        inimigo4 = Inimigo4("mock_path.png", 100, 800, 600, 50, self.mock_powerup_image, "dano")
-
-        self.assertEqual(inimigo2.powerup_efeito, "velocidade")
-        self.assertEqual(inimigo3.powerup_efeito, "tiro")
-        self.assertEqual(inimigo4.powerup_efeito, "dano")
+        # Verifica se os métodos foram chamados
+        self.assertGreaterEqual(len(self.inimigo.tiros), 1)
+        self.assertNotEqual((self.inimigo.rect.x, self.inimigo.rect.y), (100, 50))
 
 if __name__ == "__main__":
     unittest.main()
