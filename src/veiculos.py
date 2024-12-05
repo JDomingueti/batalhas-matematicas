@@ -72,7 +72,7 @@ class Veiculo:
         velocidade_tiro: float
             velocidade dos tiros do veículo    
         '''
-
+        pygame.init()
 
         self.caminho_imagem = caminho_imagem
         self.x = x

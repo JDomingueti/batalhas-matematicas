@@ -106,6 +106,7 @@ class GerenciadorTelas:
             como valor em RGB (Ex:(0,0,0)) ou nome da cor em inglês caso 
             seja uma cor reconhecida pelo pygame (Ex:'White')
         '''
+        pygame.init()
         self.largura_padrao = largura
         self.largura = self.largura_padrao
         self.altura_padrao = altura

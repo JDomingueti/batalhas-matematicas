@@ -101,6 +101,7 @@ class jogo(ABC):
             Janela sendo executada
         '''
         super().__init__()
+        pygame.init()
         self.largura = largura
         self.altura = altura
         self.cor = cor

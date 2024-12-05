@@ -63,6 +63,7 @@ class evento(ABC):
 
             Valor do volume dos efeitos em jogo
         '''
+        pygame.init()
         self.largura_tela = tela.get_width()
         self.altura_tela = tela.get_height()
         self.tela = tela
