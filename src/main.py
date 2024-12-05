@@ -111,9 +111,9 @@ class GerenciadorTelas:
         self.altura_padrao = altura
         self.altura = self.altura_padrao
         self.cor = cor
-        self.volume_efeitos = 0
+        self.volume_efeitos = 0.1
         self.musica = pygame.mixer.music.load("../assets/sons/journeyoftheprairieking(ending).mp3")
-        pygame.mixer.music.set_volume(0)
+        pygame.mixer.music.set_volume(0.2)
         self.volume_musica = pygame.mixer.music.get_volume()
         self.display = pygame.display.set_mode((self.largura, self.altura), pygame.RESIZABLE)
         self.tela = inicio.tela(self.largura, self.altura, self.cor, self.volume_musica, self.volume_efeitos, "fundo_inicio.png", self.display, self.interagir)
